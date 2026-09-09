@@ -350,6 +350,23 @@ footer.foot {
   font-size: 12px;
   text-align: center;
   margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+footer.foot .agency-logo {
+  height: 22px;
+  width: auto;
+}
+
+footer.foot .agency-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .skeleton {
@@ -490,7 +507,23 @@ footer.foot {
       <div class="grid-3" id="competitors-grid"></div>
     </section>
 
-    <footer class="foot">Data source: Google Sheets · Hosted on Netlify</footer>
+    <footer class="foot">
+      <div class="agency-line">
+        <!-- Hand-recreated from a pasted image, not the original artwork.
+             Send the actual logo file (PNG/SVG) to swap this for the exact asset. -->
+        <svg class="agency-logo" viewBox="0 0 300 92" role="img" aria-label="Fishermen Analytics">
+          <rect width="300" height="92" rx="6" fill="#FFE100"/>
+          <text x="18" y="52" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="42" fill="#0a0a0a">f</text>
+          <path d="M46,16 C54,10 64,10 63,16 C62,21 52,25 45,26 Z" fill="#0a0a0a"/>
+          <ellipse cx="47" cy="32" rx="4" ry="2.5" fill="#0a0a0a"/>
+          <text x="55" y="52" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="42" fill="#0a0a0a">shermen</text>
+          <rect x="18" y="62" width="264" height="20" fill="#1BADE2"/>
+          <text x="272" y="77" text-anchor="end" font-family="Arial, sans-serif" font-weight="700" font-size="15" letter-spacing="1.5" fill="#ffffff">ANALYTICS</text>
+        </svg>
+        <span>Powered by technologies built by Fishermen Analytics</span>
+      </div>
+      <div>Data source: Google Sheets · Hosted on Netlify</div>
+    </footer>
   </div>
 
 <script>
