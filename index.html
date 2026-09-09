@@ -141,17 +141,23 @@ img, svg, canvas {
   width: 100%;
 }
 
+/* Full-bleed masthead: spans the whole viewport width with no page
+   background showing around it, regardless of the page's light/dark theme. */
 header.top {
+  background: #ffffff;
+  border-bottom: 1px solid #e6e5e0;
+  width: 100%;
+}
+
+.top-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 16px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 20px;
-  padding: 16px 20px;
-  background: #ffffff;
-  border: 1px solid #e6e5e0;
-  border-radius: var(--radius);
   min-width: 0;
 }
 
@@ -320,7 +326,7 @@ section.block .block-note {
 
 @media (max-width: 860px) {
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
-  header.top { flex-direction: column; align-items: flex-start; }
+  .top-inner { flex-direction: column; align-items: flex-start; }
 }
 
 .card {
@@ -416,8 +422,8 @@ footer.foot .agency-line {
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <header class="top">
+  <header class="top">
+    <div class="top-inner">
       <div class="brand-lockup">
         <svg class="mark" viewBox="0 0 36 36" aria-hidden="true">
           <circle cx="18" cy="18" r="18" fill="#29abe2"/>
@@ -437,7 +443,10 @@ footer.foot .agency-line {
           <select id="month-select"></select>
         </div>
       </div>
-    </header>
+    </div>
+  </header>
+
+  <div class="wrap">
 
     <div id="status-banner" class="status-banner"></div>
 
