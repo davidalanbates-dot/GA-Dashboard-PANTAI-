@@ -1,52 +1,51 @@
 # Pantai — GA & SEO Dashboard
 
 A live dashboard that replaces the monthly Pantai SEO & Analytics slide deck.
-It's a static site — plain HTML/CSS/JS, no build step, no server, no API key
-— that reads its data straight out of a Google Sheet and renders it as
-headline KPIs, trend charts, and tables. Update the Sheet once a month; the
-dashboard picks it up automatically on the next page load.
+**It's a single self-contained HTML file** — `index.html` — that reads its
+data straight out of a Google Sheet and renders it as headline KPIs, trend
+charts, and tables. Update the Sheet once a month; the dashboard picks it up
+automatically on the next page load. No build step, no API key, no
+environment variables.
 
-**Gleneagles gets its own separate dashboard/repo/Sheet later, using this one
+Branded to match [pantai.com.my](https://www.pantai.com.my/): the wordmark
+blue and "Caring from the heart" teal tagline in the header, the same blue as
+the primary chart/KPI accent color.
+
+**Gleneagles gets its own separate dashboard file/Sheet later, using this one
 as the template.**
 
 ## How it works
 
 ```
-Google Sheet  --(public CSV export link, no key needed)-->  dashboard (static files on Netlify)
+Google Sheet  --(public CSV export link, no key needed)-->  index.html (on Netlify)
 ```
 
 - On page load, the browser reads each tab of the Sheet through Google's
   built-in CSV export link — the same mechanism as "File → Publish to web."
-  No Google Cloud account, no API key, no setup beyond sharing the Sheet.
+  No Google Cloud account, no API key.
 - There is **no Google Analytics API involved** — someone (you, or whoever
   owns the monthly report) copies the numbers from GA / Search Console into
   the Sheet once a month, same as building the old slide deck, just into
   spreadsheet rows instead of slide graphics.
-- Until the Sheet is reachable, the dashboard shows **sample data** (from
-  `data/sample-data.json`) so it's never a blank page.
+- If the Sheet isn't reachable for any reason, the dashboard falls back to
+  the sample data built into the file, so it's never a blank page.
+- The Sheet ID is already filled into `index.html` near the top (search for
+  `DASHBOARD_CONFIG`) — nothing to configure.
 
 ## Deploying
 
-Nothing to set up — the Sheet is already shared link-accessible, and the
-Sheet ID is already filled in at `js/config.js`. It's a plain drag-and-drop
-deploy, same as any static site.
+Exactly like any plain HTML file:
+
+1. Download `index.html`.
+2. Drag it onto [app.netlify.com/drop](https://app.netlify.com/drop).
+
+Done. No build command, no environment variables, nothing else to set up.
 
 (Optional, not required: since the dashboard only ever reads the Sheet, you
-could tighten Share → General access from "Editor" to "Viewer" so a stray
-link can't be used to edit your numbers. Skip this if you'd rather not touch
-permissions at all — the dashboard works either way.)
-
-### Deploy to Netlify
-
-Download/export this project folder (containing `index.html`, `css/`, `js/`,
-`data/`) and drag the whole folder onto
-[app.netlify.com/drop](https://app.netlify.com/drop). Done — no build
-command, no environment variables, nothing else to set up.
-
-> If this repo is ever connected to Netlify via GitHub instead (New site
-> from Git), it deploys the same way with no build command needed — either
-> approach works. Drag-and-drop just means re-dragging the folder if the
-> site's code ever changes; monthly data updates never require a redeploy.
+could tighten [the Sheet's](https://docs.google.com/spreadsheets/d/12fmna96dAMXd7Jmk5B4g-XWM6ZAtIGoxlRnqtkhcm-s/edit)
+Share → General access from "Editor" to "Viewer" so a stray link can't be
+used to edit your numbers. Skip this if you'd rather not touch permissions —
+the dashboard works either way.)
 
 ## Monthly maintenance
 
@@ -68,34 +67,33 @@ one new row (or set of rows) per tab for the new month:
 Always use `YYYY-MM` for the Month column so charts sort correctly. Don't
 rename tabs or header columns — the dashboard reads them by exact name.
 
-This is the **only** recurring task — the live site updates itself, no
-redeploy required.
+This is the **only** recurring task — the live file re-reads the Sheet every
+time someone opens it. No redeploy required.
 
 ## Local development
 
-Just open `index.html` directly in a browser, or serve the folder:
+Just open `index.html` directly in a browser — double-click it, no server
+needed.
 
-```bash
-python3 -m http.server 8000
-# then open http://localhost:8000
-```
+## What's inside `index.html`
 
-## Project structure
+It's one file with everything inlined: styling, the Sheet-reading logic, the
+chart-rendering logic, the page markup, and a bundled sample dataset (June
+2026 figures from the original deck) used as a fallback. The only external
+dependency is the Chart.js library, loaded from a public CDN (`cdnjs`) —
+normal for a static page, no different from a Google Fonts link.
 
-```
-index.html             Dashboard page shell
-css/styles.css          Styling (light/dark aware)
-js/config.js            The Sheet ID (already filled in — nothing else to edit)
-js/sheets.js            Reads the Sheet's public CSV export, no API key (falls back to sample data)
-js/charts.js            Chart.js rendering helpers
-js/app.js               Orchestration: KPI cards, tables, chart wiring
-data/sample-data.json   Bundled demo dataset (June 2026 figures from the deck)
-netlify.toml            Netlify static-site config (security headers only)
-```
+To make a change, open the file in any text editor:
+- **Sheet ID**: near the top, in the `DASHBOARD_CONFIG` script block.
+- **Brand colors**: the `:root { ... }` block at the top of `<style>` (look
+  for `--brand-blue`, `--brand-teal`, `--brand-navy`, `--series-1`).
+- **Logo mark**: the inline `<svg class="mark">` in the header.
 
 ## Extending this later
 
 Ideas not in this first version, worth adding once the core dashboard is in
 regular use: Users by Geolocation, Top Pages, and a Gleneagles-style toggle
 if the two dashboards ever need to be viewed side by side (they're currently
-kept as fully separate sites/Sheets by design).
+kept as fully separate files/Sheets by design). If you get the actual Pantai
+logo file (PNG/SVG) rather than this hand-drawn approximation, it can be
+dropped in as a data-URI image in place of the inline SVG mark.

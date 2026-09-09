@@ -1,22 +1,369 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pantai — GA &amp; SEO Dashboard</title>
-  <link rel="stylesheet" href="css/styles.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pantai — GA &amp; SEO Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --surface-2: #f2f1ee;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #898781;
+  --gridline: #e1e0d9;
+  --border: #e6e5e0;
+
+  --brand-blue: #1e6fb0;    /* Pantai Hospitals wordmark blue */
+  --brand-teal: #2ba8c4;    /* "Caring from the heart" tagline teal */
+  --brand-navy: #123a5e;    /* logo mark dark half */
+
+  --series-1: #1e6fb0; /* Pantai blue - brand / primary */
+  --series-2: #eb6834; /* orange */
+  --series-3: #1baf7a; /* aqua */
+  --series-4: #eda100; /* yellow */
+  --series-5: #e87ba4; /* magenta */
+  --series-6: #008300; /* green */
+  --series-7: #4a3aa7; /* violet */
+  --series-8: #e34948; /* red */
+
+  --good: #0ca30c;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(11,11,11,0.04), 0 1px 8px rgba(11,11,11,0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --surface-2: #232322;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #898781;
+    --gridline: #2c2c2a;
+    --border: #2c2c2a;
+
+    --brand-blue: #4fa3dd;
+    --brand-teal: #4fc4de;
+    --brand-navy: #1c4a73;
+
+    --series-1: #3591d1;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --series-6: #008300;
+    --series-7: #9085e9;
+    --series-8: #e66767;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --surface-2: #232322;
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #898781;
+  --gridline: #2c2c2a;
+  --border: #2c2c2a;
+
+  --brand-blue: #4fa3dd;
+  --brand-teal: #4fc4de;
+  --brand-navy: #1c4a73;
+
+  --series-1: #3591d1;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+  --series-8: #e66767;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.wrap {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 24px 20px 64px;
+}
+
+header.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-lockup .mark {
+  width: 34px;
+  height: 34px;
+  flex: none;
+}
+
+.brand-lockup .wordmark {
+  line-height: 1.15;
+}
+
+.brand-lockup .wordmark .name {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--brand-blue);
+}
+
+.brand-lockup .wordmark .name span {
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.brand-lockup .wordmark .tagline {
+  font-size: 11.5px;
+  font-style: italic;
+  color: var(--brand-teal);
+  font-family: "Segoe Script", "Brush Script MT", cursive, system-ui, sans-serif;
+}
+
+.brand-lockup .dash-title {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.month-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.month-select select {
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+
+.status-banner {
+  display: none;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.status-banner.show { display: block; }
+.status-banner.error { color: var(--critical); border-color: var(--critical); }
+
+section.block {
+  margin-bottom: 32px;
+}
+
+section.block h2 {
+  font-size: 15px;
+  margin: 0 0 4px;
+  color: var(--text-primary);
+}
+
+section.block .block-note {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin: 0 0 12px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+  border-top: 3px solid var(--brand-blue);
+}
+
+.kpi-card .label {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.kpi-card .value {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-card .delta {
+  font-size: 12.5px;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.delta.up { color: var(--good); }
+.delta.down { color: var(--critical); }
+.delta.flat { color: var(--text-muted); }
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 860px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  header.top { flex-direction: column; align-items: flex-start; }
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.card h3 {
+  font-size: 13px;
+  margin: 0 0 10px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.chart-holder {
+  position: relative;
+  height: 220px;
+}
+
+.chart-holder.tall { height: 280px; }
+
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+table.data-table th, table.data-table td {
+  text-align: left;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--gridline);
+  white-space: nowrap;
+}
+
+table.data-table th {
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+table.data-table tbody tr:hover {
+  background: var(--surface-2);
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--surface-2);
+  color: var(--text-secondary);
+}
+
+.tag.brand { background: color-mix(in srgb, var(--brand-blue) 16%, transparent); color: var(--brand-blue); }
+
+footer.foot {
+  color: var(--text-muted);
+  font-size: 12px;
+  text-align: center;
+  margin-top: 40px;
+}
+
+.skeleton {
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 20px 0;
+}
+</style>
 </head>
 <body>
   <div class="wrap">
     <header class="top">
-      <div>
-        <h1>Pantai — GA &amp; SEO Dashboard</h1>
-        <div class="subtitle" id="last-updated">Loading…</div>
+      <div class="brand-lockup">
+        <svg class="mark" viewBox="0 0 48 48" aria-hidden="true">
+          <path d="M24 8 C14 8 8 15 8 23 C8 33 16 39 24 44 C24 34 24 24 24 8 Z" fill="var(--brand-navy)"/>
+          <path d="M24 8 C34 8 40 15 40 23 C40 33 32 39 24 44 C24 34 24 24 24 8 Z" fill="var(--brand-teal)"/>
+        </svg>
+        <div class="wordmark">
+          <div class="name">PANTAI <span>HOSPITALS</span></div>
+          <div class="tagline">Caring from the heart</div>
+        </div>
       </div>
-      <div class="month-select">
-        <label for="month-select">Month</label>
-        <select id="month-select"></select>
+      <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+        <div>
+          <div class="subtitle" id="last-updated">Loading…</div>
+        </div>
+        <div class="month-select">
+          <label for="month-select">Month</label>
+          <select id="month-select"></select>
+        </div>
       </div>
     </header>
 
@@ -130,9 +477,636 @@
     <footer class="foot">Data source: Google Sheets · Hosted on Netlify</footer>
   </div>
 
-  <script src="js/config.js"></script>
-  <script src="js/sheets.js"></script>
-  <script src="js/charts.js"></script>
-  <script src="js/app.js"></script>
+<script>
+// ============================================================
+// CONFIGURATION — the only thing you should ever need to edit.
+// ============================================================
+window.DASHBOARD_CONFIG = {
+  SHEET_ID: "12fmna96dAMXd7Jmk5B4g-XWM6ZAtIGoxlRnqtkhcm-s",
+};
+</script>
+
+<script>
+// ============================================================
+// SAMPLE DATA — shown automatically until the Sheet is reachable.
+// ============================================================
+window.__SAMPLE_DATA__ = {
+  "Overview": [
+    { "Month": "2026-06", "Sessions": 418475, "Users": 307737, "Pageviews": 760039, "AvgSessionDurationSec": 60, "ViewsPerSession": 1.82, "EngagementRatePct": 61.75 }
+  ],
+  "Channels": [
+    { "Month": "2026-06", "Channel": "Organic Search", "Sessions": 322767, "Users": 222567, "EngagementRatePct": 71.4, "SessionDurationSec": 70 },
+    { "Month": "2026-06", "Channel": "Direct", "Sessions": 62945, "Users": 57793, "EngagementRatePct": 28.8, "SessionDurationSec": 23 },
+    { "Month": "2026-06", "Channel": "Referral", "Sessions": 17406, "Users": 14086, "EngagementRatePct": 12.9, "SessionDurationSec": 7 },
+    { "Month": "2026-06", "Channel": "Unassigned", "Sessions": 4770, "Users": 4133, "EngagementRatePct": 41.7, "SessionDurationSec": 59 },
+    { "Month": "2026-06", "Channel": "Organic Social", "Sessions": 2449, "Users": 2250, "EngagementRatePct": 50.5, "SessionDurationSec": 23 },
+    { "Month": "2026-06", "Channel": "Paid Social", "Sessions": 5016, "Users": 4075, "EngagementRatePct": 38.4, "SessionDurationSec": 5 },
+    { "Month": "2026-06", "Channel": "Paid Search", "Sessions": 5415, "Users": 3701, "EngagementRatePct": 70.32, "SessionDurationSec": 78 },
+    { "Month": "2026-06", "Channel": "AI Assistant", "Sessions": 1950, "Users": 1537, "EngagementRatePct": 58.0, "SessionDurationSec": 55 }
+  ],
+  "AITraffic": [
+    { "Month": "2026-06", "AISessions": 2030, "AIUsers": 1576, "AIAvgSessionDurationSec": 55, "AIBookings": 55 }
+  ],
+  "AISources": [
+    { "Month": "2026-06", "Source": "ChatGPT (OpenAI)", "Sessions": 1845, "Users": 1431 },
+    { "Month": "2026-06", "Source": "Perplexity AI", "Sessions": 65, "Users": 49 },
+    { "Month": "2026-06", "Source": "Google Gemini", "Sessions": 64, "Users": 54 },
+    { "Month": "2026-06", "Source": "Microsoft Copilot", "Sessions": 37, "Users": 31 },
+    { "Month": "2026-06", "Source": "Claude (Anthropic)", "Sessions": 19, "Users": 11 },
+    { "Month": "2026-06", "Source": "Meta AI", "Sessions": 0, "Users": 0 },
+    { "Month": "2026-06", "Source": "Grok (xAI)", "Sessions": 0, "Users": 0 },
+    { "Month": "2026-06", "Source": "Poe (Quora)", "Sessions": 0, "Users": 0 }
+  ],
+  "Organic": [
+    { "Month": "2026-01", "OrganicImpressions": 20500000, "OrganicSessions": 354915 },
+    { "Month": "2026-02", "OrganicImpressions": 19100000, "OrganicSessions": 290330 },
+    { "Month": "2026-03", "OrganicImpressions": 19600000, "OrganicSessions": 317284 },
+    { "Month": "2026-04", "OrganicImpressions": 19900000, "OrganicSessions": 337618 },
+    { "Month": "2026-05", "OrganicImpressions": 20240000, "OrganicSessions": 320025 },
+    { "Month": "2026-06", "OrganicImpressions": 19894973, "OrganicSessions": 322767 }
+  ],
+  "Keywords": [
+    { "Month": "2026-06", "Type": "Branded", "Keyword": "pantai hospital kl", "Clicks": 3786, "Impressions": 14360, "Position": 1.67 },
+    { "Month": "2026-06", "Type": "Branded", "Keyword": "pantai hospital melaka", "Clicks": 3068, "Impressions": 8721, "Position": 1.74 },
+    { "Month": "2026-06", "Type": "Branded", "Keyword": "pantai hospital kuala lumpur", "Clicks": 2888, "Impressions": 9797, "Position": 2.59 },
+    { "Month": "2026-06", "Type": "Branded", "Keyword": "pantai hospital penang", "Clicks": 2568, "Impressions": 10228, "Position": 2.06 },
+    { "Month": "2026-06", "Type": "Branded", "Keyword": "pantai hospital ipoh", "Clicks": 1922, "Impressions": 6616, "Position": 2.23 },
+    { "Month": "2026-06", "Type": "Branded", "Keyword": "pantai hospital", "Clicks": 1911, "Impressions": 6579, "Position": 1.58 },
+    { "Month": "2026-06", "Type": "Branded", "Keyword": "pantai hospital batu pahat", "Clicks": 1318, "Impressions": 3663, "Position": 3.14 },
+    { "Month": "2026-06", "Type": "Branded", "Keyword": "pantai hospital cheras", "Clicks": 1153, "Impressions": 5206, "Position": 3.35 },
+    { "Month": "2026-06", "Type": "Branded", "Keyword": "pantai hospital ampang", "Clicks": 920, "Impressions": 4988, "Position": 3.23 },
+    { "Month": "2026-06", "Type": "Branded", "Keyword": "pantai hospital sungai petani", "Clicks": 908, "Impressions": 4422, "Position": 2.15 },
+    { "Month": "2026-06", "Type": "Unbranded", "Keyword": "kayap", "Clicks": 579, "Impressions": 16280, "Position": 3.03 },
+    { "Month": "2026-06", "Type": "Unbranded", "Keyword": "buasir", "Clicks": 452, "Impressions": 11886, "Position": 3.01 },
+    { "Month": "2026-06", "Type": "Unbranded", "Keyword": "vertigo maksud", "Clicks": 304, "Impressions": 5742, "Position": 2.17 },
+    { "Month": "2026-06", "Type": "Unbranded", "Keyword": "health screening package", "Clicks": 293, "Impressions": 3301, "Position": 8.09 },
+    { "Month": "2026-06", "Type": "Unbranded", "Keyword": "tanda menopause", "Clicks": 227, "Impressions": 2407, "Position": 5.12 },
+    { "Month": "2026-06", "Type": "Unbranded", "Keyword": "kanser usus", "Clicks": 209, "Impressions": 2733, "Position": 4.09 },
+    { "Month": "2026-06", "Type": "Unbranded", "Keyword": "vertigo", "Clicks": 194, "Impressions": 22289, "Position": 7.11 },
+    { "Month": "2026-06", "Type": "Unbranded", "Keyword": "kanser limfoma", "Clicks": 185, "Impressions": 3669, "Position": 2.14 },
+    { "Month": "2026-06", "Type": "Unbranded", "Keyword": "tanda kanser usus", "Clicks": 155, "Impressions": 2226, "Position": 2.46 },
+    { "Month": "2026-06", "Type": "Unbranded", "Keyword": "medical check up", "Clicks": 153, "Impressions": 10375, "Position": 5.47 }
+  ],
+  "Conversions": [
+    { "Month": "2025-12", "TotalConversions": 6026, "Appointments": null, "Enquiries": null, "OrganicConversions": 3954, "OrganicAppointments": null, "OrganicEnquiries": null },
+    { "Month": "2026-01", "TotalConversions": 5213, "Appointments": null, "Enquiries": null, "OrganicConversions": 3991, "OrganicAppointments": null, "OrganicEnquiries": null },
+    { "Month": "2026-02", "TotalConversions": 4126, "Appointments": null, "Enquiries": null, "OrganicConversions": 3227, "OrganicAppointments": null, "OrganicEnquiries": null },
+    { "Month": "2026-03", "TotalConversions": 4920, "Appointments": null, "Enquiries": null, "OrganicConversions": 3803, "OrganicAppointments": null, "OrganicEnquiries": null },
+    { "Month": "2026-04", "TotalConversions": 5303, "Appointments": null, "Enquiries": null, "OrganicConversions": 4080, "OrganicAppointments": null, "OrganicEnquiries": null },
+    { "Month": "2026-05", "TotalConversions": 5478, "Appointments": null, "Enquiries": null, "OrganicConversions": 4238, "OrganicAppointments": null, "OrganicEnquiries": null },
+    { "Month": "2026-06", "TotalConversions": 5657, "Appointments": 5462, "Enquiries": 195, "OrganicConversions": 4117, "OrganicAppointments": 3967, "OrganicEnquiries": 150 }
+  ],
+  "Purchases": [
+    { "Month": "2026-06", "ItemsPurchased": 68, "RevenueRM": 9931, "OrganicItemsPurchased": 30, "OrganicRevenueRM": 5335 }
+  ],
+  "Competitors": [
+    { "Month": "2026-05", "Competitor": "Pantai", "SEOScore": 76, "DomainAuthority": 53, "AIVisibility": 66, "AISearchHealth": 71, "AIOAuditScore": 55 },
+    { "Month": "2026-05", "Competitor": "Gleneagles", "SEOScore": 65, "DomainAuthority": 51, "AIVisibility": 68, "AISearchHealth": 75, "AIOAuditScore": 50 },
+    { "Month": "2026-05", "Competitor": "PCMC", "SEOScore": 79, "DomainAuthority": 42, "AIVisibility": 48, "AISearchHealth": 84, "AIOAuditScore": 60 },
+    { "Month": "2026-05", "Competitor": "Sunway Medical", "SEOScore": 71, "DomainAuthority": 46, "AIVisibility": 65, "AISearchHealth": 75, "AIOAuditScore": 50 },
+    { "Month": "2026-05", "Competitor": "KPJ", "SEOScore": 54, "DomainAuthority": 47, "AIVisibility": 71, "AISearchHealth": 92, "AIOAuditScore": 50 },
+    { "Month": "2026-05", "Competitor": "SJMC", "SEOScore": 65, "DomainAuthority": 40, "AIVisibility": 56, "AISearchHealth": 92, "AIOAuditScore": 60 },
+    { "Month": "2026-05", "Competitor": "Beacon", "SEOScore": 75, "DomainAuthority": 40, "AIVisibility": 44, "AISearchHealth": 91, "AIOAuditScore": 35 },
+    { "Month": "2026-06", "Competitor": "Pantai", "SEOScore": 76, "DomainAuthority": 53, "AIVisibility": 66, "AISearchHealth": 68, "AIOAuditScore": 50 },
+    { "Month": "2026-06", "Competitor": "Gleneagles", "SEOScore": 65, "DomainAuthority": 51, "AIVisibility": 67, "AISearchHealth": 72, "AIOAuditScore": 45 },
+    { "Month": "2026-06", "Competitor": "PCMC", "SEOScore": 79, "DomainAuthority": 42, "AIVisibility": 46, "AISearchHealth": 82, "AIOAuditScore": 60 },
+    { "Month": "2026-06", "Competitor": "Sunway Medical", "SEOScore": 71, "DomainAuthority": 46, "AIVisibility": 63, "AISearchHealth": 83, "AIOAuditScore": 50 },
+    { "Month": "2026-06", "Competitor": "KPJ", "SEOScore": 54, "DomainAuthority": 47, "AIVisibility": 68, "AISearchHealth": 92, "AIOAuditScore": 50 },
+    { "Month": "2026-06", "Competitor": "SJMC", "SEOScore": 65, "DomainAuthority": 40, "AIVisibility": 50, "AISearchHealth": 92, "AIOAuditScore": 60 },
+    { "Month": "2026-06", "Competitor": "Beacon", "SEOScore": 75, "DomainAuthority": 40, "AIVisibility": 41, "AISearchHealth": 83, "AIOAuditScore": 35 }
+  ]
+};
+</script>
+
+<script>
+// ============================================================
+// DATA LAYER — reads the Sheet's public CSV export, zero API key.
+// ============================================================
+const TABS = [
+  "Overview", "Channels", "AITraffic", "AISources", "Organic",
+  "Keywords", "Conversions", "Purchases", "Competitors",
+];
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let field = "";
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++; }
+        else { inQuotes = false; }
+      } else {
+        field += c;
+      }
+    } else if (c === '"') {
+      inQuotes = true;
+    } else if (c === ",") {
+      row.push(field); field = "";
+    } else if (c === "\n" || c === "\r") {
+      if (c === "\r" && text[i + 1] === "\n") i++;
+      row.push(field); field = "";
+      rows.push(row); row = [];
+    } else {
+      field += c;
+    }
+  }
+  if (field !== "" || row.length) { row.push(field); rows.push(row); }
+  return rows.filter((r) => r.some((cell) => cell !== ""));
+}
+
+function rowsToObjects(rows) {
+  if (!rows || rows.length < 2) return [];
+  const headers = rows[0];
+  return rows.slice(1).map((row) => {
+    const obj = {};
+    headers.forEach((h, i) => {
+      const raw = row[i];
+      if (raw === undefined || raw === "") { obj[h] = null; return; }
+      const num = Number(raw);
+      obj[h] = !Number.isNaN(num) && /^-?[\d.]+$/.test(String(raw).trim()) ? num : raw;
+    });
+    return obj;
+  });
+}
+
+async function fetchTabCSV(sheetId, tabName) {
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(
+      `Could not read the "${tabName}" tab (HTTP ${res.status}). ` +
+      `Make sure the Sheet is shared as "Anyone with the link" and the tab name matches exactly.`
+    );
+  }
+  const text = await res.text();
+  if (text.trim().startsWith("<")) {
+    throw new Error(`The "${tabName}" tab isn't readable. Check the Sheet's sharing setting and tab name.`);
+  }
+  return rowsToObjects(parseCSV(text));
+}
+
+async function fetchDashboardData() {
+  const { SHEET_ID } = window.DASHBOARD_CONFIG || {};
+  if (!SHEET_ID || SHEET_ID.startsWith("REPLACE_") || SHEET_ID.startsWith("PASTE_")) {
+    window.__DASHBOARD_IS_SAMPLE__ = true;
+    return window.__SAMPLE_DATA__;
+  }
+  try {
+    const entries = await Promise.all(
+      TABS.map(async (tab) => [tab, await fetchTabCSV(SHEET_ID, tab)])
+    );
+    return Object.fromEntries(entries);
+  } catch (err) {
+    console.warn("Falling back to sample data:", err.message);
+    window.__DASHBOARD_IS_SAMPLE__ = true;
+    window.__DASHBOARD_FETCH_ERROR__ = err.message;
+    return window.__SAMPLE_DATA__;
+  }
+}
+
+function sortByMonth(rows) {
+  return [...rows].sort((a, b) => String(a.Month).localeCompare(String(b.Month)));
+}
+
+function pctChange(curr, prev) {
+  if (curr == null || prev == null || prev === 0) return null;
+  return ((curr - prev) / Math.abs(prev)) * 100;
+}
+
+window.SheetsData = { fetchDashboardData, sortByMonth, pctChange };
+</script>
+
+<script>
+// ============================================================
+// CHARTS — thin Chart.js wrapper (dataviz method: one axis, thin
+// marks, muted grid, legend for >=2 series, tooltips on hover).
+// ============================================================
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+const SERIES = () => [1, 2, 3, 4, 5, 6, 7, 8].map((n) => cssVar(`--series-${n}`));
+
+function baseGrid() {
+  return { color: cssVar("--gridline"), tickColor: "transparent" };
+}
+
+function baseTicks() {
+  return { color: cssVar("--text-muted"), font: { size: 11 } };
+}
+
+function tooltipTheme() {
+  return {
+    backgroundColor: cssVar("--surface-2"),
+    titleColor: cssVar("--text-primary"),
+    bodyColor: cssVar("--text-secondary"),
+    borderColor: cssVar("--border"),
+    borderWidth: 1,
+    padding: 10,
+    boxPadding: 4,
+    usePointStyle: true,
+  };
+}
+
+function lineChart(ctx, { labels, datasets, showLegend = true }) {
+  const colors = SERIES();
+  return new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: datasets.map((d, i) => ({
+        label: d.label,
+        data: d.data,
+        borderColor: d.color || colors[i],
+        backgroundColor: d.color || colors[i],
+        borderWidth: 2,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        pointBackgroundColor: d.color || colors[i],
+        tension: 0.25,
+        fill: false,
+      })),
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: {
+          display: showLegend && datasets.length > 1,
+          position: "top",
+          align: "end",
+          labels: { color: cssVar("--text-secondary"), boxWidth: 10, boxHeight: 10, usePointStyle: true, font: { size: 11.5 } },
+        },
+        tooltip: tooltipTheme(),
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: baseTicks(), border: { display: false } },
+        y: { grid: baseGrid(), ticks: baseTicks(), border: { display: false }, beginAtZero: true },
+      },
+    },
+  });
+}
+
+function barChart(ctx, { labels, data, colors, horizontal = false, valueFormatter }) {
+  return new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: colors, borderRadius: 4, maxBarThickness: 34 }],
+    },
+    options: {
+      indexAxis: horizontal ? "y" : "x",
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          ...tooltipTheme(),
+          callbacks: valueFormatter ? { label: (c) => valueFormatter(c.raw) } : undefined,
+        },
+      },
+      scales: {
+        x: {
+          grid: horizontal ? baseGrid() : { display: false },
+          ticks: baseTicks(),
+          border: { display: false },
+          beginAtZero: !horizontal,
+        },
+        y: {
+          grid: horizontal ? { display: false } : baseGrid(),
+          ticks: baseTicks(),
+          border: { display: false },
+          beginAtZero: horizontal,
+        },
+      },
+    },
+  });
+}
+
+window.DashCharts = { lineChart, barChart, cssVar };
+</script>
+
+<script>
+// ============================================================
+// APP — orchestration: KPI cards, tables, chart wiring.
+// ============================================================
+const {
+  fetchDashboardData: loadDashboardData,
+  sortByMonth: sortRowsByMonth,
+  pctChange: computePctChange,
+} = window.SheetsData;
+const { lineChart: renderLineChart, barChart: renderBarChart, cssVar: themeVar } = window.DashCharts;
+
+const fmt = {
+  int: (n) => (n == null ? "—" : Math.round(n).toLocaleString("en-US")),
+  num: (n, d = 2) => (n == null ? "—" : Number(n).toLocaleString("en-US", { maximumFractionDigits: d })),
+  pct: (n, d = 1) => (n == null ? "—" : `${Number(n).toLocaleString("en-US", { maximumFractionDigits: d })}%`),
+  rm: (n) => (n == null ? "—" : `RM ${Math.round(n).toLocaleString("en-US")}`),
+  dur: (sec) => {
+    if (sec == null) return "—";
+    const m = Math.floor(sec / 60);
+    const s = Math.round(sec % 60);
+    return `${m}:${String(s).padStart(2, "0")}`;
+  },
+  month: (m) => {
+    if (!m) return "—";
+    const [y, mo] = String(m).split("-");
+    const d = new Date(Number(y), Number(mo) - 1, 1);
+    return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  },
+};
+
+function deltaEl(pct, invert = false) {
+  if (pct == null || Number.isNaN(pct)) return `<span class="delta flat">—</span>`;
+  const good = invert ? pct <= 0 : pct >= 0;
+  const cls = Math.abs(pct) < 0.05 ? "flat" : good ? "up" : "down";
+  const arrow = pct > 0 ? "▲" : pct < 0 ? "▼" : "•";
+  return `<span class="delta ${cls}">${arrow} ${fmt.pct(Math.abs(pct))} vs prior month</span>`;
+}
+
+function kpiCard(label, value, deltaPct, invert = false) {
+  return `
+    <div class="kpi-card">
+      <div class="label">${label}</div>
+      <div class="value">${value}</div>
+      ${deltaEl(deltaPct, invert)}
+    </div>`;
+}
+
+function rowsAtMonth(rows, month) {
+  return rows.filter((r) => r.Month === month);
+}
+
+function monthsOf(rows) {
+  return [...new Set(rows.map((r) => r.Month))].filter(Boolean);
+}
+
+function setStatus(msg, isError = false) {
+  const el = document.getElementById("status-banner");
+  if (!msg) { el.className = "status-banner"; el.textContent = ""; return; }
+  el.textContent = msg;
+  el.className = "status-banner show" + (isError ? " error" : "");
+}
+
+function populateMonthSelect(months, selected, onChange) {
+  const sel = document.getElementById("month-select");
+  sel.innerHTML = months
+    .slice()
+    .sort()
+    .reverse()
+    .map((m) => `<option value="${m}" ${m === selected ? "selected" : ""}>${fmt.month(m)}</option>`)
+    .join("");
+  sel.onchange = () => onChange(sel.value);
+}
+
+function render(data, month) {
+  renderOverview(data.Overview, month);
+  renderChannels(data.Channels, month);
+  renderAITraffic(data.AITraffic, data.AISources, month);
+  renderOrganic(data.Organic, month);
+  renderKeywords(data.Keywords, month);
+  renderConversions(data.Conversions, month);
+  renderPurchases(data.Purchases, month);
+  renderCompetitors(data.Competitors, month);
+}
+
+// ---------- Overview ----------
+function renderOverview(rows, month) {
+  const sorted = sortRowsByMonth(rows);
+  const idx = sorted.findIndex((r) => r.Month === month);
+  const curr = sorted[idx];
+  const prev = sorted[idx - 1];
+  const el = document.getElementById("overview-kpis");
+  if (!curr) { el.innerHTML = `<div class="skeleton">No Overview data for this month.</div>`; return; }
+  el.innerHTML = [
+    kpiCard("Sessions", fmt.int(curr.Sessions), computePctChange(curr.Sessions, prev?.Sessions)),
+    kpiCard("Users", fmt.int(curr.Users), computePctChange(curr.Users, prev?.Users)),
+    kpiCard("Pageviews", fmt.int(curr.Pageviews), computePctChange(curr.Pageviews, prev?.Pageviews)),
+    kpiCard("Avg Session Duration", fmt.dur(curr.AvgSessionDurationSec), computePctChange(curr.AvgSessionDurationSec, prev?.AvgSessionDurationSec)),
+    kpiCard("Views / Session", fmt.num(curr.ViewsPerSession), computePctChange(curr.ViewsPerSession, prev?.ViewsPerSession)),
+    kpiCard("Engagement Rate", fmt.pct(curr.EngagementRatePct), computePctChange(curr.EngagementRatePct, prev?.EngagementRatePct)),
+  ].join("");
+}
+
+// ---------- Channels ----------
+let channelsChart;
+function renderChannels(rows, month) {
+  const atMonth = rowsAtMonth(rows, month).sort((a, b) => b.Sessions - a.Sessions);
+  const holder = document.getElementById("channels-chart");
+  if (channelsChart) channelsChart.destroy();
+  if (!atMonth.length) { holder.parentElement.querySelector(".chart-holder").innerHTML = `<div class="skeleton">No channel data for this month.</div>`; }
+  else {
+    const colors = atMonth.map((_, i) => themeVar(`--series-${(i % 8) + 1}`));
+    channelsChart = renderBarChart(holder, {
+      labels: atMonth.map((r) => r.Channel),
+      data: atMonth.map((r) => r.Sessions),
+      colors,
+      valueFormatter: (v) => `${fmt.int(v)} sessions`,
+    });
+  }
+
+  const tbody = document.getElementById("channels-table-body");
+  tbody.innerHTML = atMonth.map((r) => `
+    <tr>
+      <td>${r.Channel}</td>
+      <td>${fmt.int(r.Sessions)}</td>
+      <td>${fmt.int(r.Users)}</td>
+      <td>${fmt.pct(r.EngagementRatePct)}</td>
+      <td>${fmt.dur(r.SessionDurationSec)}</td>
+    </tr>`).join("") || `<tr><td colspan="5" class="skeleton">No data</td></tr>`;
+}
+
+// ---------- AI Traffic ----------
+let aiTrendChart, aiSourcesChart;
+function renderAITraffic(aiRows, sourceRows, month) {
+  const sorted = sortRowsByMonth(aiRows);
+  const idx = sorted.findIndex((r) => r.Month === month);
+  const curr = sorted[idx];
+  const prev = sorted[idx - 1];
+  const el = document.getElementById("ai-kpis");
+  el.innerHTML = curr ? [
+    kpiCard("AI Sessions", fmt.int(curr.AISessions), computePctChange(curr.AISessions, prev?.AISessions)),
+    kpiCard("AI Users", fmt.int(curr.AIUsers), computePctChange(curr.AIUsers, prev?.AIUsers)),
+    kpiCard("AI Bookings", fmt.int(curr.AIBookings), computePctChange(curr.AIBookings, prev?.AIBookings)),
+    kpiCard("Avg Session Duration", fmt.dur(curr.AIAvgSessionDurationSec), computePctChange(curr.AIAvgSessionDurationSec, prev?.AIAvgSessionDurationSec)),
+  ].join("") : `<div class="skeleton">No AI traffic data for this month.</div>`;
+
+  const trendCanvas = document.getElementById("ai-trend-chart");
+  if (aiTrendChart) aiTrendChart.destroy();
+  aiTrendChart = renderLineChart(trendCanvas, {
+    labels: sorted.map((r) => fmt.month(r.Month)),
+    datasets: [{ label: "AI Sessions", data: sorted.map((r) => r.AISessions) }],
+    showLegend: false,
+  });
+
+  const atMonth = rowsAtMonth(sourceRows, month).sort((a, b) => b.Sessions - a.Sessions);
+  const srcCanvas = document.getElementById("ai-sources-chart");
+  if (aiSourcesChart) aiSourcesChart.destroy();
+  if (atMonth.length) {
+    const colors = atMonth.map((_, i) => themeVar(`--series-${(i % 8) + 1}`));
+    aiSourcesChart = renderBarChart(srcCanvas, {
+      labels: atMonth.map((r) => r.Source),
+      data: atMonth.map((r) => r.Sessions),
+      colors,
+      horizontal: true,
+      valueFormatter: (v) => `${fmt.int(v)} sessions`,
+    });
+  }
+}
+
+// ---------- Organic ----------
+let organicImpChart, organicSessChart;
+function renderOrganic(rows, month) {
+  const sorted = sortRowsByMonth(rows);
+  const idx = sorted.findIndex((r) => r.Month === month);
+  const curr = sorted[idx];
+  const prev = sorted[idx - 1];
+  const el = document.getElementById("organic-kpis");
+  el.innerHTML = curr ? [
+    kpiCard("Organic Impressions", fmt.int(curr.OrganicImpressions), computePctChange(curr.OrganicImpressions, prev?.OrganicImpressions)),
+    kpiCard("Organic Sessions", fmt.int(curr.OrganicSessions), computePctChange(curr.OrganicSessions, prev?.OrganicSessions)),
+  ].join("") : `<div class="skeleton">No organic data for this month.</div>`;
+
+  const impCanvas = document.getElementById("organic-impressions-chart");
+  if (organicImpChart) organicImpChart.destroy();
+  organicImpChart = renderLineChart(impCanvas, {
+    labels: sorted.map((r) => fmt.month(r.Month)),
+    datasets: [{ label: "Impressions", data: sorted.map((r) => r.OrganicImpressions) }],
+    showLegend: false,
+  });
+
+  const sessCanvas = document.getElementById("organic-sessions-chart");
+  if (organicSessChart) organicSessChart.destroy();
+  organicSessChart = renderLineChart(sessCanvas, {
+    labels: sorted.map((r) => fmt.month(r.Month)),
+    datasets: [{ label: "Sessions", data: sorted.map((r) => r.OrganicSessions), color: themeVar("--series-3") }],
+    showLegend: false,
+  });
+}
+
+// ---------- Keywords ----------
+function renderKeywords(rows, month) {
+  const atMonth = rowsAtMonth(rows, month);
+  const branded = atMonth.filter((r) => r.Type === "Branded").sort((a, b) => b.Clicks - a.Clicks);
+  const unbranded = atMonth.filter((r) => r.Type === "Unbranded").sort((a, b) => b.Clicks - a.Clicks);
+
+  const fillTable = (id, list) => {
+    document.getElementById(id).innerHTML = list.map((r) => `
+      <tr>
+        <td>${r.Keyword}</td>
+        <td>${fmt.int(r.Clicks)}</td>
+        <td>${fmt.int(r.Impressions)}</td>
+        <td>${fmt.num(r.Position, 2)}</td>
+      </tr>`).join("") || `<tr><td colspan="4" class="skeleton">No data</td></tr>`;
+  };
+  fillTable("branded-keywords-body", branded);
+  fillTable("unbranded-keywords-body", unbranded);
+}
+
+// ---------- Conversions ----------
+let conversionsChart;
+function renderConversions(rows, month) {
+  const sorted = sortRowsByMonth(rows);
+  const idx = sorted.findIndex((r) => r.Month === month);
+  const curr = sorted[idx];
+  const prev = sorted[idx - 1];
+  const el = document.getElementById("conversions-kpis");
+  el.innerHTML = curr ? [
+    kpiCard("Total Conversions", fmt.int(curr.TotalConversions), computePctChange(curr.TotalConversions, prev?.TotalConversions)),
+    kpiCard("Appointments", fmt.int(curr.Appointments), computePctChange(curr.Appointments, prev?.Appointments)),
+    kpiCard("Enquiries", fmt.int(curr.Enquiries), computePctChange(curr.Enquiries, prev?.Enquiries)),
+    kpiCard("Organic Conversions", fmt.int(curr.OrganicConversions), computePctChange(curr.OrganicConversions, prev?.OrganicConversions)),
+  ].join("") : `<div class="skeleton">No conversions data for this month.</div>`;
+
+  const canvas = document.getElementById("conversions-trend-chart");
+  if (conversionsChart) conversionsChart.destroy();
+  conversionsChart = renderLineChart(canvas, {
+    labels: sorted.map((r) => fmt.month(r.Month)),
+    datasets: [
+      { label: "Total Conversions", data: sorted.map((r) => r.TotalConversions) },
+      { label: "Organic Conversions", data: sorted.map((r) => r.OrganicConversions), color: themeVar("--series-3") },
+    ],
+  });
+}
+
+// ---------- Purchases ----------
+function renderPurchases(rows, month) {
+  const sorted = sortRowsByMonth(rows);
+  const idx = sorted.findIndex((r) => r.Month === month);
+  const curr = sorted[idx];
+  const prev = sorted[idx - 1];
+  const el = document.getElementById("purchases-kpis");
+  el.innerHTML = curr ? [
+    kpiCard("Items Purchased", fmt.int(curr.ItemsPurchased), computePctChange(curr.ItemsPurchased, prev?.ItemsPurchased)),
+    kpiCard("Revenue", fmt.rm(curr.RevenueRM), computePctChange(curr.RevenueRM, prev?.RevenueRM)),
+    kpiCard("Organic Items Purchased", fmt.int(curr.OrganicItemsPurchased), computePctChange(curr.OrganicItemsPurchased, prev?.OrganicItemsPurchased)),
+    kpiCard("Organic Revenue", fmt.rm(curr.OrganicRevenueRM), computePctChange(curr.OrganicRevenueRM, prev?.OrganicRevenueRM)),
+  ].join("") : `<div class="skeleton">No purchases data for this month.</div>`;
+}
+
+// ---------- Competitors ----------
+const COMPETITOR_METRICS = [
+  { key: "SEOScore", label: "SEO Audit Score" },
+  { key: "DomainAuthority", label: "Domain Authority" },
+  { key: "AIVisibility", label: "AI Visibility" },
+  { key: "AISearchHealth", label: "AI Search Health" },
+  { key: "AIOAuditScore", label: "AIO Audit Score" },
+];
+const competitorCharts = {};
+function renderCompetitors(rows, month) {
+  const atMonth = rowsAtMonth(rows, month);
+  const holder = document.getElementById("competitors-grid");
+  if (!atMonth.length) { holder.innerHTML = `<div class="skeleton">No competitor data for this month.</div>`; return; }
+  holder.innerHTML = COMPETITOR_METRICS.map((m) => `
+    <div class="card">
+      <h3>${m.label}</h3>
+      <div class="chart-holder"><canvas id="comp-chart-${m.key}"></canvas></div>
+    </div>`).join("");
+
+  COMPETITOR_METRICS.forEach((m) => {
+    const sorted = [...atMonth].filter((r) => r[m.key] != null).sort((a, b) => b[m.key] - a[m.key]);
+    const colors = sorted.map((r) => (r.Competitor === "Pantai" ? themeVar("--brand-blue") : themeVar("--text-muted")));
+    const canvas = document.getElementById(`comp-chart-${m.key}`);
+    if (competitorCharts[m.key]) competitorCharts[m.key].destroy();
+    competitorCharts[m.key] = renderBarChart(canvas, {
+      labels: sorted.map((r) => r.Competitor),
+      data: sorted.map((r) => r[m.key]),
+      colors,
+      horizontal: true,
+    });
+  });
+}
+
+// ---------- Boot ----------
+async function boot() {
+  setStatus("Loading live data from Google Sheets…");
+  try {
+    const data = await loadDashboardData();
+    if (window.__DASHBOARD_IS_SAMPLE__) {
+      setStatus("Showing sample data — the Sheet isn't reachable yet (or this is a demo run). See the comments at the top of this file.");
+    } else {
+      setStatus("");
+    }
+    const months = monthsOf(data.Overview);
+    if (!months.length) {
+      setStatus("Connected to the sheet, but the Overview tab has no rows yet. Add a month to get started.", true);
+      return;
+    }
+    const latest = [...months].sort().pop();
+    populateMonthSelect(months, latest, (m) => render(data, m));
+    render(data, latest);
+    document.getElementById("last-updated").textContent = `Data as of ${fmt.month(latest)} · refreshed on page load`;
+  } catch (err) {
+    console.error(err);
+    setStatus(`Could not load dashboard data: ${err.message}`, true);
+  }
+}
+
+boot();
+</script>
 </body>
 </html>
