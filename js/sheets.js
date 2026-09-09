@@ -43,7 +43,11 @@ async function fetchSampleData() {
 
 async function fetchDashboardData() {
   const { SHEET_ID, SHEETS_API_KEY } = window.DASHBOARD_CONFIG || {};
-  if (!SHEET_ID || !SHEETS_API_KEY || SHEET_ID === "REPLACE_WITH_SHEET_ID") {
+  const notConfigured =
+    !SHEET_ID || !SHEETS_API_KEY ||
+    SHEET_ID.startsWith("REPLACE_") || SHEET_ID.startsWith("PASTE_") ||
+    SHEETS_API_KEY.startsWith("REPLACE_") || SHEETS_API_KEY.startsWith("PASTE_");
+  if (notConfigured) {
     return fetchSampleData();
   }
 
