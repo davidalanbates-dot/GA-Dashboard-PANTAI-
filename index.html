@@ -37,6 +37,13 @@
   --brand-teal: #2ba8c4;    /* "Caring from the heart" tagline teal */
   --brand-navy: #123a5e;    /* logo mark dark half */
 
+  /* Pantai CI accent colors (from the site's category CTA bar) — used
+     sparingly as section markers, not for chart series encoding. */
+  --ci-green: #7ac142;
+  --ci-orange: #f5a623;
+  --ci-cyan: #29abe2;
+  --ci-pink: #ec5c9d;
+
   --series-1: #1e6fb0; /* Pantai blue - brand / primary */
   --series-2: #eb6834; /* orange */
   --series-3: #1baf7a; /* aqua */
@@ -109,6 +116,11 @@
 
 * { box-sizing: border-box; }
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   margin: 0;
   background: var(--page);
@@ -118,10 +130,15 @@ body {
   line-height: 1.45;
 }
 
+img, svg, canvas {
+  max-width: 100%;
+}
+
 .wrap {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 24px 20px 64px;
+  padding: 24px 16px 64px;
+  width: 100%;
 }
 
 header.top {
@@ -131,53 +148,63 @@ header.top {
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border);
+  padding: 16px 20px;
+  background: #ffffff;
+  border: 1px solid #e6e5e0;
+  border-radius: var(--radius);
+  min-width: 0;
 }
+
+/* The header is a fixed white masthead regardless of page theme (light or
+   dark), so everything inside it uses fixed colors rather than the
+   theme-variable tokens used by the rest of the page. */
 
 .brand-lockup {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
 }
 
 .brand-lockup .mark {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   flex: none;
 }
 
 .brand-lockup .wordmark {
   line-height: 1.15;
+  min-width: 0;
 }
 
 .brand-lockup .wordmark .name {
   font-size: 18px;
   font-weight: 800;
   letter-spacing: 0.01em;
-  color: var(--brand-blue);
+  color: #1e6fb0;
+  white-space: nowrap;
 }
 
 .brand-lockup .wordmark .name span {
-  color: var(--text-secondary);
-  font-weight: 700;
+  color: #1e6fb0;
+  font-weight: 800;
 }
 
 .brand-lockup .wordmark .tagline {
   font-size: 11.5px;
   font-style: italic;
-  color: var(--brand-teal);
+  color: #2ba8c4;
   font-family: "Segoe Script", "Brush Script MT", cursive, system-ui, sans-serif;
 }
 
 .brand-lockup .dash-title {
   font-size: 12px;
-  color: var(--text-muted);
+  color: #55534d;
   margin-top: 2px;
 }
 
 .subtitle {
-  color: var(--text-secondary);
+  color: #33322f;
   font-size: 13px;
 }
 
@@ -185,14 +212,14 @@ header.top {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--text-secondary);
+  color: #33322f;
   font-size: 13px;
 }
 
 .month-select select {
-  background: var(--surface);
-  color: var(--text-primary);
-  border: 1px solid var(--border);
+  background: #ffffff;
+  color: #111111;
+  border: 1px solid #d8d6d0;
   border-radius: 6px;
   padding: 5px 8px;
   font-size: 13px;
@@ -218,8 +245,20 @@ section.block {
 section.block h2 {
   font-size: 15px;
   margin: 0 0 4px;
+  padding-left: 12px;
+  border-left: 4px solid var(--brand-blue);
   color: var(--text-primary);
 }
+
+.block.accent-green h2 { border-left-color: var(--ci-green); }
+.block.accent-orange h2 { border-left-color: var(--ci-orange); }
+.block.accent-cyan h2 { border-left-color: var(--ci-cyan); }
+.block.accent-pink h2 { border-left-color: var(--ci-pink); }
+
+.block.accent-green .kpi-card { border-top-color: var(--ci-green); }
+.block.accent-orange .kpi-card { border-top-color: var(--ci-orange); }
+.block.accent-cyan .kpi-card { border-top-color: var(--ci-cyan); }
+.block.accent-pink .kpi-card { border-top-color: var(--ci-pink); }
 
 section.block .block-note {
   color: var(--text-muted);
@@ -269,12 +308,14 @@ section.block .block-note {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+  min-width: 0;
 }
 
 .grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
+  min-width: 0;
 }
 
 @media (max-width: 860px) {
@@ -288,6 +329,7 @@ section.block .block-note {
   border-radius: var(--radius);
   padding: 16px;
   box-shadow: var(--shadow);
+  min-width: 0;
 }
 
 .card h3 {
@@ -300,6 +342,8 @@ section.block .block-note {
 .chart-holder {
   position: relative;
   height: 220px;
+  min-width: 0;
+  width: 100%;
 }
 
 .chart-holder.tall { height: 280px; }
@@ -375,9 +419,9 @@ footer.foot .agency-line {
   <div class="wrap">
     <header class="top">
       <div class="brand-lockup">
-        <svg class="mark" viewBox="0 0 48 48" aria-hidden="true">
-          <path d="M24 8 C14 8 8 15 8 23 C8 33 16 39 24 44 C24 34 24 24 24 8 Z" fill="var(--brand-navy)"/>
-          <path d="M24 8 C34 8 40 15 40 23 C40 33 32 39 24 44 C24 34 24 24 24 8 Z" fill="var(--brand-teal)"/>
+        <svg class="mark" viewBox="0 0 36 36" aria-hidden="true">
+          <circle cx="18" cy="18" r="18" fill="#29abe2"/>
+          <path d="M18,0 A18,18 0 0,0 18,36 C27,29 9,23 18,18 C27,13 9,7 18,0 Z" fill="#123a5e"/>
         </svg>
         <div class="wordmark">
           <div class="name">PANTAI <span>HOSPITALS</span></div>
@@ -403,7 +447,7 @@ footer.foot .agency-line {
       <div class="kpi-grid" id="overview-kpis"></div>
     </section>
 
-    <section class="block">
+    <section class="block accent-green">
       <h2>Conversions</h2>
       <p class="block-note">Total appointments &amp; enquiries, and the organic-only equivalent.</p>
       <div class="kpi-grid" id="conversions-kpis"></div>
@@ -413,7 +457,7 @@ footer.foot .agency-line {
       </div>
     </section>
 
-    <section class="block">
+    <section class="block accent-cyan">
       <h2>AI &amp; Conversational Search Traffic</h2>
       <p class="block-note">Sessions arriving via ChatGPT, Gemini, Perplexity, Copilot and Claude.</p>
       <div class="kpi-grid" id="ai-kpis"></div>
@@ -429,7 +473,7 @@ footer.foot .agency-line {
       </div>
     </section>
 
-    <section class="block">
+    <section class="block accent-orange">
       <h2>Traffic Channels</h2>
       <p class="block-note">Sessions, users, engagement and duration by acquisition channel, this month.</p>
       <div class="grid-2">
@@ -449,7 +493,7 @@ footer.foot .agency-line {
       </div>
     </section>
 
-    <section class="block">
+    <section class="block accent-pink">
       <h2>Organic Performance</h2>
       <p class="block-note">Search Console impressions and GA organic sessions over time.</p>
       <div class="kpi-grid" id="organic-kpis"></div>
@@ -490,13 +534,13 @@ footer.foot .agency-line {
       </div>
     </section>
 
-    <section class="block">
+    <section class="block accent-green">
       <h2>Purchases &amp; Revenue</h2>
       <p class="block-note">Health screening / package purchases attributed via GA ecommerce.</p>
       <div class="kpi-grid" id="purchases-kpis"></div>
     </section>
 
-    <section class="block">
+    <section class="block accent-orange">
       <h2>Competitive Benchmark</h2>
       <p class="block-note">Pantai (highlighted) vs. Gleneagles, PCMC, Sunway Medical, KPJ, SJMC and Beacon, this month.</p>
       <div class="grid-3" id="competitors-grid"></div>
