@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pantai — GA &amp; SEO Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <div>
+        <h1>Pantai — GA &amp; SEO Dashboard</h1>
+        <div class="subtitle" id="last-updated">Loading…</div>
+      </div>
+      <div class="month-select">
+        <label for="month-select">Month</label>
+        <select id="month-select"></select>
+      </div>
+    </header>
+
+    <div id="status-banner" class="status-banner"></div>
+
+    <section class="block">
+      <h2>Traffic &amp; Engagement</h2>
+      <p class="block-note">Sessions, Users, Pageviews and behaviour, month-over-month.</p>
+      <div class="kpi-grid" id="overview-kpis"></div>
+    </section>
+
+    <section class="block">
+      <h2>Conversions</h2>
+      <p class="block-note">Total appointments &amp; enquiries, and the organic-only equivalent.</p>
+      <div class="kpi-grid" id="conversions-kpis"></div>
+      <div class="card" style="margin-top:16px;">
+        <h3>Conversions trend</h3>
+        <div class="chart-holder tall"><canvas id="conversions-trend-chart"></canvas></div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>AI &amp; Conversational Search Traffic</h2>
+      <p class="block-note">Sessions arriving via ChatGPT, Gemini, Perplexity, Copilot and Claude.</p>
+      <div class="kpi-grid" id="ai-kpis"></div>
+      <div class="grid-2" style="margin-top:16px;">
+        <div class="card">
+          <h3>AI sessions trend</h3>
+          <div class="chart-holder"><canvas id="ai-trend-chart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Sessions by AI source (this month)</h3>
+          <div class="chart-holder"><canvas id="ai-sources-chart"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Traffic Channels</h2>
+      <p class="block-note">Sessions, users, engagement and duration by acquisition channel, this month.</p>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Sessions by channel</h3>
+          <div class="chart-holder tall"><canvas id="channels-chart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Channel detail</h3>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead><tr><th>Channel</th><th>Sessions</th><th>Users</th><th>Engagement</th><th>Duration</th></tr></thead>
+              <tbody id="channels-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Organic Performance</h2>
+      <p class="block-note">Search Console impressions and GA organic sessions over time.</p>
+      <div class="kpi-grid" id="organic-kpis"></div>
+      <div class="grid-2" style="margin-top:16px;">
+        <div class="card">
+          <h3>Organic impressions trend</h3>
+          <div class="chart-holder"><canvas id="organic-impressions-chart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Organic sessions trend</h3>
+          <div class="chart-holder"><canvas id="organic-sessions-chart"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Top Search Queries</h2>
+      <p class="block-note">Top branded and unbranded queries from Search Console, this month.</p>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Branded <span class="tag brand">Top 10</span></h3>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead><tr><th>Keyword</th><th>Clicks</th><th>Impressions</th><th>Avg Position</th></tr></thead>
+              <tbody id="branded-keywords-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Unbranded <span class="tag">Top 10</span></h3>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead><tr><th>Keyword</th><th>Clicks</th><th>Impressions</th><th>Avg Position</th></tr></thead>
+              <tbody id="unbranded-keywords-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Purchases &amp; Revenue</h2>
+      <p class="block-note">Health screening / package purchases attributed via GA ecommerce.</p>
+      <div class="kpi-grid" id="purchases-kpis"></div>
+    </section>
+
+    <section class="block">
+      <h2>Competitive Benchmark</h2>
+      <p class="block-note">Pantai (highlighted) vs. Gleneagles, PCMC, Sunway Medical, KPJ, SJMC and Beacon, this month.</p>
+      <div class="grid-3" id="competitors-grid"></div>
+    </section>
+
+    <footer class="foot">Data source: Google Sheets · Hosted on Netlify</footer>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/sheets.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
