@@ -1,11 +1,10 @@
 # Pantai — GA & SEO Dashboard
 
 A live dashboard that replaces the monthly Pantai SEO & Analytics slide deck.
-It's a static site — plain HTML/CSS/JS, no build step, no server — that reads
-its data straight out of a Google Sheet and renders it as headline KPIs,
-trend charts, and tables. Update the Sheet once a month; the dashboard picks
-it up automatically on the next page load. No redeploy needed for data
-updates — only if the site's code itself changes.
+It's a static site — plain HTML/CSS/JS, no build step, no server, no API key
+— that reads its data straight out of a Google Sheet and renders it as
+headline KPIs, trend charts, and tables. Update the Sheet once a month; the
+dashboard picks it up automatically on the next page load.
 
 **Gleneagles gets its own separate dashboard/repo/Sheet later, using this one
 as the template.**
@@ -13,78 +12,41 @@ as the template.**
 ## How it works
 
 ```
-Google Sheet  --(Sheets API, read-only)-->  dashboard (static files on Netlify)
+Google Sheet  --(public CSV export link, no key needed)-->  dashboard (static files on Netlify)
 ```
 
-- On page load, the browser calls the Google Sheets API directly to read the
-  sheet's tabs and renders the charts/cards/tables from that data.
+- On page load, the browser reads each tab of the Sheet through Google's
+  built-in CSV export link — the same mechanism as "File → Publish to web."
+  No Google Cloud account, no API key, no setup beyond sharing the Sheet.
 - There is **no Google Analytics API involved** — someone (you, or whoever
   owns the monthly report) copies the numbers from GA / Search Console into
   the Sheet once a month, same as building the old slide deck, just into
   spreadsheet rows instead of slide graphics.
-- Until a real API key is added, the dashboard shows **sample data** (from
-  `data/sample-data.json`) so it's never a blank page — you'll see a banner
-  saying so.
+- Until the Sheet is reachable, the dashboard shows **sample data** (from
+  `data/sample-data.json`) so it's never a blank page.
 
 ## Deploying
 
-This is a **drag-and-drop deploy** — same as any plain HTML site: no build
-step, no environment variables. You just need one thing set up first.
+Nothing to set up — the Sheet is already shared link-accessible, and the
+Sheet ID is already filled in at `js/config.js`. It's a plain drag-and-drop
+deploy, same as any static site.
 
-### 1. Fix the Sheet's sharing permission
+(Optional, not required: since the dashboard only ever reads the Sheet, you
+could tighten Share → General access from "Editor" to "Viewer" so a stray
+link can't be used to edit your numbers. Skip this if you'd rather not touch
+permissions at all — the dashboard works either way.)
 
-The Sheet ([open it here](https://docs.google.com/spreadsheets/d/12fmna96dAMXd7Jmk5B4g-XWM6ZAtIGoxlRnqtkhcm-s/edit))
-must be shared as **"Anyone with the link — Viewer"** (not Editor) — a plain
-API key with no sign-in can only read Sheets that are publicly viewable, and
-Viewer-only keeps randoms from editing your numbers.
+### Deploy to Netlify
 
-Share → General access → Anyone with the link → set the role to **Viewer**.
+Download/export this project folder (containing `index.html`, `css/`, `js/`,
+`data/`) and drag the whole folder onto
+[app.netlify.com/drop](https://app.netlify.com/drop). Done — no build
+command, no environment variables, nothing else to set up.
 
-### 2. Get a restricted Google API key
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/) (any free
-   project works).
-2. **APIs & Services → Library** → search "Google Sheets API" → **Enable**.
-3. **APIs & Services → Credentials → Create Credentials → API key.**
-4. Click into the new key and restrict it (this matters, since the key will
-   be visible in the deployed site's page source — normal for browser-side
-   Google API keys, e.g. Maps embeds work the same way):
-   - **Application restrictions → Websites** → add your Netlify URL once you
-     know it, e.g. `https://pantai-dashboard.netlify.app/*`.
-   - **API restrictions → Restrict key** → select only **Google Sheets API**.
-5. Copy the key.
-
-### 3. Add the key to the project
-
-Open `js/config.js` in any text editor and replace the placeholder:
-
-```js
-window.DASHBOARD_CONFIG = {
-  SHEET_ID: "12fmna96dAMXd7Jmk5B4g-XWM6ZAtIGoxlRnqtkhcm-s",   // already set
-  SHEETS_API_KEY: "PASTE_YOUR_GOOGLE_SHEETS_API_KEY_HERE",     // <- paste your key here
-};
-```
-
-Save the file. (If you'd rather not edit this yourself, send the API key to
-whoever is managing this repo and they can do it for you.)
-
-### 4. Deploy to Netlify
-
-Same as before: download/export this project folder (containing `index.html`,
-`css/`, `js/`, `data/`) and drag the whole folder onto
-[app.netlify.com/drop](https://app.netlify.com/drop). That's it — no build
-command, nothing else to configure.
-
-Once it's live, go back to the API key's **Website restrictions** in Google
-Cloud Console and lock it to the real Netlify domain you were given (drop
-any temporary `localhost` entry).
-
-> **Prefer zero manual re-uploads forever?** Connect this GitHub repo to
-> Netlify instead (New site from Git). Since the API key already lives in
-> `js/config.js`, there's still no build step or environment variables to
-> configure — every future push just deploys automatically. Either approach
-> works equally well; drag-and-drop just means re-dragging the folder if the
-> site's code ever changes (monthly data updates never require this).
+> If this repo is ever connected to Netlify via GitHub instead (New site
+> from Git), it deploys the same way with no build command needed — either
+> approach works. Drag-and-drop just means re-dragging the folder if the
+> site's code ever changes; monthly data updates never require a redeploy.
 
 ## Monthly maintenance
 
@@ -118,16 +80,13 @@ python3 -m http.server 8000
 # then open http://localhost:8000
 ```
 
-With the placeholder API key still in `js/config.js`, the dashboard
-automatically falls back to the bundled sample data.
-
 ## Project structure
 
 ```
 index.html             Dashboard page shell
 css/styles.css          Styling (light/dark aware)
-js/config.js            Sheet ID + API key (edit this one file to go live)
-js/sheets.js            Google Sheets API fetch + parsing (falls back to sample data)
+js/config.js            The Sheet ID (already filled in — nothing else to edit)
+js/sheets.js            Reads the Sheet's public CSV export, no API key (falls back to sample data)
 js/charts.js            Chart.js rendering helpers
 js/app.js               Orchestration: KPI cards, tables, chart wiring
 data/sample-data.json   Bundled demo dataset (June 2026 figures from the deck)
