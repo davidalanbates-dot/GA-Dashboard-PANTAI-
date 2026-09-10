@@ -257,7 +257,7 @@ section.block .block-note {
 }
 
 .kpi-card .value {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 600;
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
@@ -801,7 +801,7 @@ function lineChart(ctx, { labels, datasets, showLegend = true }) {
   });
 }
 
-function barChart(ctx, { labels, data, colors, horizontal = false, valueFormatter }) {
+function barChart(ctx, { labels, data, colors, horizontal = false, valueFormatter, valueAxisMin }) {
   return new Chart(ctx, {
     type: "bar",
     data: {
@@ -825,12 +825,14 @@ function barChart(ctx, { labels, data, colors, horizontal = false, valueFormatte
           ticks: baseTicks(),
           border: { display: false },
           beginAtZero: !horizontal,
+          min: horizontal ? valueAxisMin : undefined,
         },
         y: {
           grid: horizontal ? { display: false } : baseGrid(),
           ticks: baseTicks(),
           border: { display: false },
           beginAtZero: horizontal,
+          min: horizontal ? undefined : valueAxisMin,
         },
       },
     },
@@ -1125,6 +1127,7 @@ const COMPETITOR_METRICS = [
   { key: "AIOAuditScore", label: "AIO Audit Score" },
 ];
 const competitorCharts = {};
+const COMPETITOR_MIN_30 = new Set(["DomainAuthority", "AIVisibility", "AIOAuditScore"]);
 function renderCompetitors(rows, month) {
   const atMonth = rowsAtMonth(rows, month);
   const holder = document.getElementById("competitors-grid");
@@ -1145,6 +1148,7 @@ function renderCompetitors(rows, month) {
       data: sorted.map((r) => r[m.key]),
       colors,
       horizontal: true,
+      valueAxisMin: COMPETITOR_MIN_30.has(m.key) ? 30 : undefined,
     });
   });
 }
