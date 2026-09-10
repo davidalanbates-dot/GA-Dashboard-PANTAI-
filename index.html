@@ -461,11 +461,11 @@ footer.foot .agency-line {
       <div class="kpi-grid" id="organic-kpis"></div>
       <div class="grid-2" style="margin-top:16px;">
         <div class="card">
-          <h3>Organic impressions trend</h3>
+          <h3>Organic impressions trend (year-on-year)</h3>
           <div class="chart-holder"><canvas id="organic-impressions-chart"></canvas></div>
         </div>
         <div class="card">
-          <h3>Organic sessions trend</h3>
+          <h3>Organic sessions trend (year-on-year)</h3>
           <div class="chart-holder"><canvas id="organic-sessions-chart"></canvas></div>
         </div>
       </div>
@@ -556,12 +556,24 @@ window.__SAMPLE_DATA__ = {
     { "Month": "2026-06", "Source": "Poe (Quora)", "Sessions": 0, "Users": 0 }
   ],
   "Organic": [
-    { "Month": "2026-01", "OrganicImpressions": 20500000, "OrganicSessions": 354915 },
-    { "Month": "2026-02", "OrganicImpressions": 19100000, "OrganicSessions": 290330 },
-    { "Month": "2026-03", "OrganicImpressions": 19600000, "OrganicSessions": 317284 },
-    { "Month": "2026-04", "OrganicImpressions": 19900000, "OrganicSessions": 337618 },
-    { "Month": "2026-05", "OrganicImpressions": 20240000, "OrganicSessions": 320025 },
-    { "Month": "2026-06", "OrganicImpressions": 19894973, "OrganicSessions": 322767 }
+    { "Month": "2025-01", "OrganicImpressions": 18100000, "OrganicSessions": 594979 },
+    { "Month": "2025-02", "OrganicImpressions": 22000000, "OrganicSessions": 686760 },
+    { "Month": "2025-03", "OrganicImpressions": 23200000, "OrganicSessions": 638561 },
+    { "Month": "2025-04", "OrganicImpressions": 20500000, "OrganicSessions": 572089 },
+    { "Month": "2025-05", "OrganicImpressions": 24500000, "OrganicSessions": 596662 },
+    { "Month": "2025-06", "OrganicImpressions": 23200000, "OrganicSessions": 489503 },
+    { "Month": "2025-07", "OrganicImpressions": 24300000, "OrganicSessions": 461570 },
+    { "Month": "2025-08", "OrganicImpressions": 22500000, "OrganicSessions": 422354 },
+    { "Month": "2025-09", "OrganicImpressions": 21200000, "OrganicSessions": 388382 },
+    { "Month": "2025-10", "OrganicImpressions": 23600000, "OrganicSessions": 455952 },
+    { "Month": "2025-11", "OrganicImpressions": 24300000, "OrganicSessions": 362436 },
+    { "Month": "2025-12", "OrganicImpressions": 23400000, "OrganicSessions": 332520 },
+    { "Month": "2026-03", "OrganicImpressions": 24000000, "OrganicSessions": 317284 },
+    { "Month": "2026-04", "OrganicImpressions": 24100000, "OrganicSessions": 337618 },
+    { "Month": "2026-05", "OrganicImpressions": 20246160, "OrganicSessions": 320025 },
+    { "Month": "2026-06", "OrganicImpressions": 19894973, "OrganicSessions": 322767 },
+    { "Month": "2026-07", "OrganicImpressions": 20264120, "OrganicSessions": 326380 },
+    { "Month": "2026-08", "OrganicImpressions": 19183118, "OrganicSessions": 261829 }
   ],
   "Keywords": [
     { "Month": "2026-06", "Type": "Branded", "Keyword": "pantai hospital kl", "Clicks": 3786, "Impressions": 14360, "Position": 1.67 },
@@ -997,6 +1009,30 @@ function renderAITraffic(aiRows, sourceRows, month) {
 }
 
 // ---------- Organic ----------
+const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// Groups rows by calendar year and lays each year out as a 12-point series
+// (Jan..Dec) so different years can be compared side by side. The most
+// recent year is drawn in the brand color; earlier years are muted, so the
+// current year still reads as the headline while prior years give context.
+function yoyDatasets(rows, field, currentColor) {
+  const byYear = {};
+  rows.forEach((r) => {
+    const parts = String(r.Month).split("-");
+    const year = parts[0];
+    const monthIdx = Number(parts[1]) - 1;
+    if (!byYear[year]) byYear[year] = new Array(12).fill(null);
+    if (r[field] != null) byYear[year][monthIdx] = r[field];
+  });
+  const years = Object.keys(byYear).sort();
+  const datasets = years.map((y, i) => ({
+    label: y,
+    data: byYear[y],
+    color: i === years.length - 1 ? currentColor : themeVar("--text-muted"),
+  }));
+  return { labels: MONTH_ABBR, datasets };
+}
+
 let organicImpChart, organicSessChart;
 function renderOrganic(rows, month) {
   const sorted = sortRowsByMonth(rows);
@@ -1011,19 +1047,13 @@ function renderOrganic(rows, month) {
 
   const impCanvas = document.getElementById("organic-impressions-chart");
   if (organicImpChart) organicImpChart.destroy();
-  organicImpChart = renderLineChart(impCanvas, {
-    labels: sorted.map((r) => fmt.month(r.Month)),
-    datasets: [{ label: "Impressions", data: sorted.map((r) => r.OrganicImpressions) }],
-    showLegend: false,
-  });
+  const impYoY = yoyDatasets(rows, "OrganicImpressions", themeVar("--series-1"));
+  organicImpChart = renderLineChart(impCanvas, { ...impYoY, showLegend: true });
 
   const sessCanvas = document.getElementById("organic-sessions-chart");
   if (organicSessChart) organicSessChart.destroy();
-  organicSessChart = renderLineChart(sessCanvas, {
-    labels: sorted.map((r) => fmt.month(r.Month)),
-    datasets: [{ label: "Sessions", data: sorted.map((r) => r.OrganicSessions), color: themeVar("--series-3") }],
-    showLegend: false,
-  });
+  const sessYoY = yoyDatasets(rows, "OrganicSessions", themeVar("--series-3"));
+  organicSessChart = renderLineChart(sessCanvas, { ...sessYoY, showLegend: true });
 }
 
 // ---------- Keywords ----------
