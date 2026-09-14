@@ -4,13 +4,26 @@
 // longer needs to be shared "Anyone with the link" — only the service
 // account (and whichever humans edit it monthly) can open it.
 //
-// IMPORTANT: the service-account JSON key must live OUTSIDE this folder
-// (outside public_html), e.g. one level up at ../secrets/service-account.json.
+// IMPORTANT: the service-account JSON key must live OUTSIDE public_html
+// entirely — currently at the account root's "fetch" folder, i.e.
+// sibling of public_html, as: fetch/service-account.json
 // Never upload the key itself into the same folder as this file.
 
 header('Content-Type: application/json');
 
-define('KEY_PATH', __DIR__ . '/../secrets/service-account.json');
+// Tries a couple of likely locations relative to this file, in case the
+// hosting account nests folders one level differently than expected.
+define('KEY_PATH_CANDIDATES', [
+    __DIR__ . '/../../fetch/service-account.json', // public_html/<subdomain-folder>/ -> account root/fetch
+    __DIR__ . '/../fetch/service-account.json',    // public_html/ -> account root/fetch
+]);
+
+function resolveKeyPath() {
+    foreach (KEY_PATH_CANDIDATES as $path) {
+        if (file_exists($path)) return $path;
+    }
+    return null;
+}
 
 define('SHEET_ID', '12fmna96dAMXd7Jmk5B4g-XWM6ZAtIGoxlRnqtkhcm-s');
 
@@ -53,13 +66,17 @@ function getAccessToken($key) {
     return $data['access_token'] ?? null;
 }
 
-if (!file_exists(KEY_PATH)) {
+$keyPath = resolveKeyPath();
+if (!$keyPath) {
     http_response_code(500);
-    echo json_encode(['error' => 'Service account key not found on the server.']);
+    echo json_encode([
+        'error' => 'Service account key not found on the server.',
+        'looked_in' => KEY_PATH_CANDIDATES,
+    ]);
     exit;
 }
 
-$key = json_decode(file_get_contents(KEY_PATH), true);
+$key = json_decode(file_get_contents($keyPath), true);
 $accessToken = getAccessToken($key);
 
 if (!$accessToken) {
