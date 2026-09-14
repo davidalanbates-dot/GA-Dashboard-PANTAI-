@@ -4,27 +4,42 @@
 // longer needs to be shared "Anyone with the link" — only the service
 // account (and whichever humans edit it monthly) can open it.
 //
-// IMPORTANT: the service-account JSON key currently lives in a "fetch"
-// folder at public_html/fetch/service-account.json. That folder MUST
-// also carry the .htaccess file (see fetch/.htaccess in this repo) that
+// IMPORTANT: the service-account JSON key lives in a "fetch" folder
+// somewhere near this file — see FETCH_DIR_CANDIDATES below for exactly
+// where this script looks. Wherever it ends up, that folder MUST also
+// carry the .htaccess file (see fetch/.htaccess in this repo) that
 // blocks direct web requests to it — otherwise anything inside
 // public_html is potentially reachable by URL, key file included.
 // Never upload the key itself into the same folder as this file.
 
 header('Content-Type: application/json');
 
-// Tries a couple of likely locations relative to this file, in case the
-// hosting account nests folders one level differently than expected.
-define('KEY_PATH_CANDIDATES', [
-    __DIR__ . '/../fetch/service-account.json',    // public_html/fetch (current location)
-    __DIR__ . '/../../fetch/service-account.json', // account root/fetch
+// Every "fetch" folder location this project has tried, so a future
+// re-upload into any of these spots keeps working without another
+// round of debugging.
+define('FETCH_DIR_CANDIDATES', [
+    __DIR__ . '/fetch',          // dashboards.fishermen-analytics.com/fetch (same folder as this script)
+    __DIR__ . '/../fetch',       // public_html/fetch
+    __DIR__ . '/../../fetch',    // account root/fetch
+    __DIR__ . '/../etc/fetch',   // public_html/etc/fetch
+    __DIR__ . '/../../etc/fetch',// account root/etc/fetch
 ]);
 
+// Looks in each candidate folder for the key. Matches the exact expected
+// filename first; falls back to "whatever .json file is in there" so a
+// slightly different filename (e.g. the original downloaded name) still
+// works.
 function resolveKeyPath() {
-    foreach (KEY_PATH_CANDIDATES as $path) {
-        if (file_exists($path)) return $path;
+    $checked = [];
+    foreach (FETCH_DIR_CANDIDATES as $dir) {
+        $exact = $dir . '/service-account.json';
+        $checked[] = $exact;
+        if (file_exists($exact)) return [$exact, $checked];
+
+        $jsonFiles = @glob($dir . '/*.json');
+        if ($jsonFiles) return [$jsonFiles[0], $checked];
     }
-    return null;
+    return [null, $checked];
 }
 
 define('SHEET_ID', '12fmna96dAMXd7Jmk5B4g-XWM6ZAtIGoxlRnqtkhcm-s');
@@ -68,12 +83,12 @@ function getAccessToken($key) {
     return $data['access_token'] ?? null;
 }
 
-$keyPath = resolveKeyPath();
+[$keyPath, $checkedPaths] = resolveKeyPath();
 if (!$keyPath) {
     http_response_code(500);
     echo json_encode([
         'error' => 'Service account key not found on the server.',
-        'looked_in' => KEY_PATH_CANDIDATES,
+        'looked_in' => $checkedPaths,
     ]);
     exit;
 }
