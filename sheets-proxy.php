@@ -4,15 +4,20 @@
 // longer needs to be shared "Anyone with the link" — only the service
 // account (and whichever humans edit it monthly) can open it.
 //
-// IMPORTANT: the service-account JSON key lives in a "fetch" folder
-// somewhere near this file — see FETCH_DIR_CANDIDATES below for exactly
-// where this script looks. Wherever it ends up, that folder MUST also
-// carry the .htaccess file (see fetch/.htaccess in this repo) that
-// blocks direct web requests to it — otherwise anything inside
-// public_html is potentially reachable by URL, key file included.
-// Never upload the key itself into the same folder as this file.
+// IMPORTANT: the service-account JSON key is named pantai-sheets-proxy.json
+// (a Gleneagles dashboard will use its own gleneagles-sheets-proxy.json,
+// so the two never collide even if they end up in the same folder) and
+// lives in a "fetch" folder somewhere near this file — see
+// FETCH_DIR_CANDIDATES below for exactly where this script looks.
+// Wherever it ends up, that folder MUST also carry the .htaccess file
+// (see fetch/.htaccess in this repo) that blocks direct web requests to
+// it — otherwise anything inside public_html is potentially reachable by
+// URL, key file included. Never upload the key itself into the same
+// folder as this file.
 
 header('Content-Type: application/json');
+
+define('KEY_FILENAME', 'pantai-sheets-proxy.json');
 
 // Every "fetch" folder location this project has tried, so a future
 // re-upload into any of these spots keeps working without another
@@ -26,17 +31,17 @@ define('FETCH_DIR_CANDIDATES', [
 ]);
 
 // Looks in each candidate folder for the key. Matches the exact expected
-// filename first; falls back to "whatever .json file is in there" so a
-// slightly different filename (e.g. the original downloaded name) still
-// works.
+// filename first; falls back to "any pantai-*.json file in there" (never
+// picking up a Gleneagles key by mistake) so a slightly different
+// filename still works.
 function resolveKeyPath() {
     $checked = [];
     foreach (FETCH_DIR_CANDIDATES as $dir) {
-        $exact = $dir . '/service-account.json';
+        $exact = $dir . '/' . KEY_FILENAME;
         $checked[] = $exact;
         if (file_exists($exact)) return [$exact, $checked];
 
-        $jsonFiles = @glob($dir . '/*.json');
+        $jsonFiles = @glob($dir . '/pantai-*.json');
         if ($jsonFiles) return [$jsonFiles[0], $checked];
     }
     return [null, $checked];
