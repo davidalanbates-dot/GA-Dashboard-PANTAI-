@@ -555,6 +555,10 @@ footer.foot .agency-line {
 // ============================================================
 // CONFIGURATION — the only thing you should ever need to edit.
 // ============================================================
+// SHEET_ID is just an on/off switch for sample-data fallback here — the
+// Sheet is no longer publicly readable. The real fetch goes through
+// sheets-proxy.php (same folder on the server), which holds the actual
+// Sheet ID and a restricted service-account credential server-side.
 window.DASHBOARD_CONFIG = {
   SHEET_ID: "12fmna96dAMXd7Jmk5B4g-XWM6ZAtIGoxlRnqtkhcm-s",
 };
@@ -674,42 +678,15 @@ window.__SAMPLE_DATA__ = {
 
 <script>
 // ============================================================
-// DATA LAYER — reads the Sheet's public CSV export, zero API key.
+// DATA LAYER — reads the Sheet through sheets-proxy.php, which holds a
+// restricted service-account credential server-side. The Sheet itself is
+// no longer shared publicly; only that service account (and whichever
+// humans edit it monthly) can open it.
 // ============================================================
 const TABS = [
   "Overview", "Channels", "AITraffic", "AISources", "AICitations", "Organic",
   "Keywords", "Conversions", "Purchases", "Competitors",
 ];
-
-function parseCSV(text) {
-  const rows = [];
-  let row = [];
-  let field = "";
-  let inQuotes = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (inQuotes) {
-      if (c === '"') {
-        if (text[i + 1] === '"') { field += '"'; i++; }
-        else { inQuotes = false; }
-      } else {
-        field += c;
-      }
-    } else if (c === '"') {
-      inQuotes = true;
-    } else if (c === ",") {
-      row.push(field); field = "";
-    } else if (c === "\n" || c === "\r") {
-      if (c === "\r" && text[i + 1] === "\n") i++;
-      row.push(field); field = "";
-      rows.push(row); row = [];
-    } else {
-      field += c;
-    }
-  }
-  if (field !== "" || row.length) { row.push(field); rows.push(row); }
-  return rows.filter((r) => r.some((cell) => cell !== ""));
-}
 
 function rowsToObjects(rows) {
   if (!rows || rows.length < 2) return [];
@@ -726,22 +703,6 @@ function rowsToObjects(rows) {
   });
 }
 
-async function fetchTabCSV(sheetId, tabName) {
-  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(
-      `Could not read the "${tabName}" tab (HTTP ${res.status}). ` +
-      `Make sure the Sheet is shared as "Anyone with the link" and the tab name matches exactly.`
-    );
-  }
-  const text = await res.text();
-  if (text.trim().startsWith("<")) {
-    throw new Error(`The "${tabName}" tab isn't readable. Check the Sheet's sharing setting and tab name.`);
-  }
-  return rowsToObjects(parseCSV(text));
-}
-
 async function fetchDashboardData() {
   const { SHEET_ID } = window.DASHBOARD_CONFIG || {};
   if (!SHEET_ID || SHEET_ID.startsWith("REPLACE_") || SHEET_ID.startsWith("PASTE_")) {
@@ -749,9 +710,14 @@ async function fetchDashboardData() {
     return window.__SAMPLE_DATA__;
   }
   try {
-    const entries = await Promise.all(
-      TABS.map(async (tab) => [tab, await fetchTabCSV(SHEET_ID, tab)])
-    );
+    const res = await fetch("sheets-proxy.php");
+    const body = await res.json().catch(() => null);
+    if (!res.ok || !body || body.error) {
+      throw new Error(
+        (body && body.error) || `sheets-proxy.php request failed (HTTP ${res.status}).`
+      );
+    }
+    const entries = TABS.map((tab) => [tab, rowsToObjects(body[tab] || [])]);
     return Object.fromEntries(entries);
   } catch (err) {
     console.warn("Falling back to sample data:", err.message);
