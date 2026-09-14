@@ -4,9 +4,11 @@
 // longer needs to be shared "Anyone with the link" — only the service
 // account (and whichever humans edit it monthly) can open it.
 //
-// IMPORTANT: the service-account JSON key must live OUTSIDE public_html
-// entirely — currently at the account root's "fetch" folder, i.e.
-// sibling of public_html, as: fetch/service-account.json
+// IMPORTANT: the service-account JSON key currently lives in a "fetch"
+// folder at public_html/fetch/service-account.json. That folder MUST
+// also carry the .htaccess file (see fetch/.htaccess in this repo) that
+// blocks direct web requests to it — otherwise anything inside
+// public_html is potentially reachable by URL, key file included.
 // Never upload the key itself into the same folder as this file.
 
 header('Content-Type: application/json');
@@ -14,8 +16,8 @@ header('Content-Type: application/json');
 // Tries a couple of likely locations relative to this file, in case the
 // hosting account nests folders one level differently than expected.
 define('KEY_PATH_CANDIDATES', [
-    __DIR__ . '/../../fetch/service-account.json', // public_html/<subdomain-folder>/ -> account root/fetch
-    __DIR__ . '/../fetch/service-account.json',    // public_html/ -> account root/fetch
+    __DIR__ . '/../fetch/service-account.json',    // public_html/fetch (current location)
+    __DIR__ . '/../../fetch/service-account.json', // account root/fetch
 ]);
 
 function resolveKeyPath() {
