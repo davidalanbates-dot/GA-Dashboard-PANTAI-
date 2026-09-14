@@ -61,7 +61,7 @@ for any new brand's Sheet with the same tab names and headers:
 | `Channels` | Month, Channel, Sessions, Users, EngagementRatePct, SessionDurationSec | One row per month **per channel** — channel names vary over time (e.g. "AI Assistant" and "Cross-network" appeared only in later months); that's fine, just add new channel name rows as they show up |
 | `AITraffic` | Month, AISessions, AIUsers, AIAvgSessionDurationSec, AIBookings | Headline AI-channel summary. `AIBookings` = the brand's own ChatGPT-attributed appointment count, since that's the one figure the source reports themselves compare month-to-month — don't substitute a differently-scoped "AI conversions network-wide" number, it won't be comparable |
 | `AISources` | Month, Source, Sessions, Users | One row per month per AI platform (ChatGPT, Gemini, Perplexity, Copilot, Claude, Meta AI, Grok, Poe) |
-| `Organic` | Month, OrganicImpressions, OrganicSessions | |
+| `Organic` | Month, OrganicImpressions, OrganicSessions | Keep **prior-year months too** (e.g. all of 2025 as well as the current year) if you want year-on-year comparison charts — see Chart patterns below |
 | `Keywords` | Month, Type (Branded/Unbranded), Keyword, Clicks, Impressions, Position | Top 10 of each type per month |
 | `Conversions` | Month, TotalConversions, Appointments, Enquiries, OrganicConversions, OrganicAppointments, OrganicEnquiries | |
 | `Purchases` | Month, ItemsPurchased, RevenueRM, OrganicItemsPurchased, OrganicRevenueRM | |
@@ -116,18 +116,42 @@ decided in the Read Me tab so it's traceable later, not just in chat.
 ## Branding a new instance (this is the part that changes per-brand)
 
 For each new brand, gather (ask if not given):
-1. **Logo** — get the actual file. Images pasted inline into chat are
-   **not** accessible as files even though they render — only a real file
-   upload or a shared-link URL (Google Drive, etc.) can be downloaded and
-   embedded losslessly. If only a pasted image is available, hand-recreate
-   it as SVG as a stopgap and say plainly that it's an approximation
-   pending the real asset. Once a real file/URL is available, embed it as
-   a `data:image/png;base64,...` `<img>` — check the PNG's own dimensions
-   first (IHDR chunk, no PIL needed: bytes 16-24 are big-endian width/height
-   uint32) to know whether it's just an icon mark or the full lockup
-   (icon+wordmark+tagline combined) — the Pantai file turned out to be the
-   full lockup, which meant replacing the separate icon+text markup
-   entirely rather than placing them side by side.
+
+1. **Logo.** Get the actual file — this took several rounds on Pantai and
+   is worth doing carefully:
+   - Images **pasted inline into chat are not accessible as files**, even
+     though they render for you. Only a real file upload or a shared-link
+     URL (Google Drive, etc.) can be downloaded and embedded losslessly.
+     If the user pastes an image, tell them plainly and ask for a Drive
+     link instead — don't try to hand-recreate a hospital's real logo as
+     an SVG approximation, just ask again.
+   - Resolve a Drive link with `mcp__Google_Drive__get_file_metadata`
+     (gets you the real `fileId`, mime type, and file size) then
+     `mcp__Google_Drive__download_file_content` (returns base64).
+   - **A file that decodes fine is not automatically a good logo.** Twice
+     on Pantai the user sent a file (once a `.webp`, once a `.png`, both
+     332×61) whose fine-print tagline text ("Caring from the heart")
+     turned out to be genuinely corrupted/garbled pixel data — not a
+     cropping bug, not a CSS issue, just bad source pixels. **Always
+     render the candidate file yourself and look at it before embedding
+     it**, and check it at the size it will actually display at in the
+     header (e.g. `height: 38px`), not just at its native resolution —
+     text that reads fine zoomed into the raw file can still be illegible
+     once scaled down to the real header height, or vice versa turn out
+     to be garbled at any size. If a `.webp` file needs converting to PNG
+     and PIL isn't installed, don't bother installing anything — load it
+     into a headless Chromium page as a data URI `<img>`, draw it to a
+     `<canvas>`, and read back `canvas.toDataURL("image/png")`; this also
+     gives you the true pixel dimensions via `naturalWidth`/`naturalHeight`.
+   - Check the PNG's own dimensions (IHDR chunk, no PIL needed: bytes
+     16–24 are big-endian width/height uint32) to know whether it's just
+     an icon mark or the full lockup (icon+wordmark+tagline combined) —
+     Pantai's was the full lockup, meaning it replaces any separate
+     icon+text markup entirely rather than sitting beside it.
+   - If a logo genuinely looks broken/garbled, say so plainly with a
+     side-by-side screenshot (native size vs. actual display size) and
+     ask for a better source file — don't guess or keep reprocessing a
+     bad asset hoping it improves.
 2. **Primary brand color** — becomes `--series-1` (the chart palette's blue
    slot) and the highlighted-competitor color in the benchmark charts.
    Re-run the CVD-safety validator after retinting:
@@ -138,9 +162,12 @@ For each new brand, gather (ask if not given):
 3. **Secondary CI colors** (from the brand's site, typically a category/CTA
    button bar) — used **sparingly** as section accent markers only: an h2
    left-border (4px) and the section's KPI-card top-border, cycling through
-   sections. Never repaint the validated chart-series palette with these —
-   decorative brand accents and data-encoding colors are different jobs and
-   should stay visually distinct.
+   sections so **no two adjacent sections share the same accent color**
+   (re-check this any time sections get reordered — moving a section can
+   silently create an adjacent duplicate). Never repaint the validated
+   chart-series palette with these — decorative brand accents and
+   data-encoding colors are different jobs and should stay visually
+   distinct.
 4. **Header treatment** — a full-width band, fixed white background with
    fixed dark text (`#33322f`/`#1e6fb0`-style hex, not the page's
    light/dark theme CSS variables), independent of whether the page body is
@@ -152,6 +179,45 @@ For each new brand, gather (ask if not given):
    that — the user later asked to roll it back as not worth it, so the
    current shipped Pantai header is the plain white-background bar, not
    full-bleed. Ask before assuming which one a new brand wants.)
+5. **Favicon** — a small square icon (Pantai used a 16×16 PNG), embedded
+   the same way as the logo: `<link rel="icon" type="image/png"
+   href="data:image/png;base64,...">` in `<head>`. Same rule as the logo —
+   get the real file via upload/Drive link, don't approximate.
+6. **Page `<title>`** — ask the user for the exact string they want (e.g.
+   `"Pantai Hospitals - GA & SEO Dashboard"`); don't assume a shorthand
+   like `"Pantai — GA & SEO Dashboard"` is close enough, they may want the
+   full brand name and a plain hyphen instead of an em dash.
+
+## Chart patterns
+
+- **Year-on-year comparison line charts** (e.g. Organic Impressions/Sessions
+  trend, 2025 vs 2026): requires the Sheet tab to carry the prior year's
+  months too, not just the current year. Group rows by year, build one
+  Chart.js dataset per year keyed to a fixed 12-month `Jan..Dec` label set
+  (so months line up across years regardless of how many months of the
+  current year exist so far), and color only the most recent year with the
+  metric's series color — older years render in a muted gray so the
+  current year visually pops.
+- **Bar chart axis minimums**: when a metric's values cluster tightly in a
+  narrow band away from zero (e.g. a 0–100 audit score that's realistically
+  always 30+), a user may ask specific charts to start their axis above
+  zero for readability. Chart.js `indexAxis: "y"` (horizontal bars) swaps
+  which scale is the value axis — the minimum goes on `scales.x.min`, not
+  `scales.y.min`, for horizontal bars (and vice versa for vertical). Only
+  apply this to the specific metrics named — don't change every chart's
+  axis just because one was asked about.
+
+## Font-size requests — confirm which element before changing anything
+
+"Increase the headline font size" is ambiguous between the big KPI numbers
+inside each card (e.g. `.kpi-card .value`) and the section title text above
+each block (e.g. `section.block h2`, things like "Traffic & Engagement").
+On Pantai, a font-size request was first (wrongly) applied to the KPI
+numbers; the user meant the section `h2` titles, and the KPI change had to
+be reverted. If a "headline"/"header"/"title" font-size request doesn't
+obviously map to one specific CSS rule already discussed in the
+conversation, either ask which element, or point at a screenshot region
+before making the change — don't guess when two plausible targets exist.
 
 ## Mobile / responsiveness
 
@@ -179,22 +245,34 @@ without a live Sheet:
   reachable even when general web egress isn't) and intercept the `gviz/tq`
   requests with `page.route` to serve CSV built from the bundled sample
   data — this exercises the actual fetch → parse → render path end to end.
+- Check computed values, not just presence: `getComputedStyle(el).fontSize`
+  after a font-size change, `document.title` after a title change, the
+  `<link rel="icon">` `href` after a favicon change, and section order via
+  `page.$$eval("section.block h2", els => els.map(e => e.textContent))`
+  after reordering sections — screenshots catch layout problems, computed
+  values catch "did the CSS/DOM actually change" problems.
 - Always screenshot and actually look at the image before telling the user
   it's fixed — several real bugs here (header contrast in dark mode, a grid
-  overflow bug) were only caught by looking, not by absence of console
-  errors.
+  overflow bug, a garbled logo tagline) were only caught by looking, not by
+  absence of console errors.
 
 ## Current state (as of this hand-off)
 
 - **Pantai**: live at repo `davidalanbates-dot/GA-Dashboard-PANTAI-`,
   branch `claude/practical-einstein-tnygy7`. Sheet populated March–August
-  2026 (a few tabs have documented gaps — see that Sheet's Read Me tab).
-  Real logo embedded. Footer reads "Powered by technologies built by
-  Fishermen Analytics" (no logo in the footer — was tried and explicitly
-  removed as looking out of place).
+  2026 plus full 2025 Organic data for YoY charts (a few tabs have
+  documented gaps — see that Sheet's Read Me tab). Real logo embedded
+  (after two corrupted-tagline attempts — see the Logo section above),
+  favicon set, page title is `"Pantai Hospitals - GA & SEO Dashboard"`.
+  Section order top to bottom: Traffic & Engagement, AI & Conversational
+  Search Traffic, Traffic Channels, Organic Performance, Top Search
+  Queries, Conversions, Purchases & Revenue, Competitive Benchmark.
+  Footer reads "Powered by technologies built by Fishermen Analytics" (no
+  logo in the footer — was tried and explicitly removed as looking out of
+  place).
 - **Gleneagles**: not started. Needs its own repo, its own Sheet (same
-  schema as above), its own logo, and its own CI colors — nothing shared
-  with Pantai except this architecture and schema.
+  schema as above), its own logo, its own favicon, and its own CI colors —
+  nothing shared with Pantai except this architecture and schema.
 
 ## Company/agency context
 
