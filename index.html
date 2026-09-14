@@ -424,6 +424,20 @@ footer.foot .agency-line {
           <div class="chart-holder"><canvas id="ai-sources-chart"></canvas></div>
         </div>
       </div>
+      <div class="grid-3" style="margin-top:16px;">
+        <div class="card">
+          <h3>AI mentions trend</h3>
+          <div class="chart-holder"><canvas id="ai-mentions-chart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>AI citations trend</h3>
+          <div class="chart-holder"><canvas id="ai-citations-chart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Total AI cited pages trend</h3>
+          <div class="chart-holder"><canvas id="ai-cited-pages-chart"></canvas></div>
+        </div>
+      </div>
     </section>
 
     <section class="block accent-orange">
@@ -556,6 +570,14 @@ window.__SAMPLE_DATA__ = {
     { "Month": "2026-06", "Source": "Grok (xAI)", "Sessions": 0, "Users": 0 },
     { "Month": "2026-06", "Source": "Poe (Quora)", "Sessions": 0, "Users": 0 }
   ],
+  "AICitations": [
+    { "Month": "2026-03", "AIMentions": 403, "AICitations": 5100, "TotalAICitedPages": 2100 },
+    { "Month": "2026-04", "AIMentions": 208, "AICitations": 5200, "TotalAICitedPages": 2300 },
+    { "Month": "2026-05", "AIMentions": 2900, "AICitations": 12800, "TotalAICitedPages": 5800 },
+    { "Month": "2026-06", "AIMentions": 2700, "AICitations": 12400, "TotalAICitedPages": 5600 },
+    { "Month": "2026-07", "AIMentions": 2100, "AICitations": 10700, "TotalAICitedPages": 4900 },
+    { "Month": "2026-08", "AIMentions": 2100, "AICitations": 10800, "TotalAICitedPages": 5100 }
+  ],
   "Organic": [
     { "Month": "2025-01", "OrganicImpressions": 18100000, "OrganicSessions": 594979 },
     { "Month": "2025-02", "OrganicImpressions": 22000000, "OrganicSessions": 686760 },
@@ -634,7 +656,7 @@ window.__SAMPLE_DATA__ = {
 // DATA LAYER — reads the Sheet's public CSV export, zero API key.
 // ============================================================
 const TABS = [
-  "Overview", "Channels", "AITraffic", "AISources", "Organic",
+  "Overview", "Channels", "AITraffic", "AISources", "AICitations", "Organic",
   "Keywords", "Conversions", "Purchases", "Competitors",
 ];
 
@@ -920,6 +942,7 @@ function render(data, month) {
   renderOverview(data.Overview, month);
   renderChannels(data.Channels, month);
   renderAITraffic(data.AITraffic, data.AISources, month);
+  renderAICitations(data.AICitations, month);
   renderOrganic(data.Organic, month);
   renderKeywords(data.Keywords, month);
   renderConversions(data.Conversions, month);
@@ -1009,6 +1032,37 @@ function renderAITraffic(aiRows, sourceRows, month) {
       valueFormatter: (v) => `${fmt.int(v)} sessions`,
     });
   }
+}
+
+// ---------- AI Citations ----------
+let aiMentionsChart, aiCitationsChart, aiCitedPagesChart;
+function renderAICitations(rows, month) {
+  const sorted = sortRowsByMonth(rows || []);
+  const labels = sorted.map((r) => fmt.month(r.Month));
+
+  const mentionsCanvas = document.getElementById("ai-mentions-chart");
+  if (aiMentionsChart) aiMentionsChart.destroy();
+  aiMentionsChart = renderLineChart(mentionsCanvas, {
+    labels,
+    datasets: [{ label: "AI Mentions", data: sorted.map((r) => r.AIMentions) }],
+    showLegend: false,
+  });
+
+  const citationsCanvas = document.getElementById("ai-citations-chart");
+  if (aiCitationsChart) aiCitationsChart.destroy();
+  aiCitationsChart = renderLineChart(citationsCanvas, {
+    labels,
+    datasets: [{ label: "AI Citations", data: sorted.map((r) => r.AICitations) }],
+    showLegend: false,
+  });
+
+  const citedPagesCanvas = document.getElementById("ai-cited-pages-chart");
+  if (aiCitedPagesChart) aiCitedPagesChart.destroy();
+  aiCitedPagesChart = renderLineChart(citedPagesCanvas, {
+    labels,
+    datasets: [{ label: "Total AI Cited Pages", data: sorted.map((r) => r.TotalAICitedPages) }],
+    showLegend: false,
+  });
 }
 
 // ---------- Organic ----------
