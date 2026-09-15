@@ -1,6 +1,7 @@
 # Blocks ALL direct web requests to this folder and everything in it.
-# The service-account.json key must never be downloadable by URL — only
-# sheets-proxy.php reads it directly off disk, which this does not affect.
+# The pantai-sheets-proxy.json key must never be downloadable by URL —
+# only sheets-proxy.php reads it directly off disk, which this does not
+# affect.
 
 <IfModule mod_authz_core.c>
     Require all denied
